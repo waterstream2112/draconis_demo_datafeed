@@ -1,9 +1,11 @@
 <launch>
-    <node ns="multijackal_01" pkg="draconis_demo_datafeed" name="draconis_demo_datafeed_2" type="data_feed_node.py" output="screen">
-        <!-- <param name="camera_input_topic" value="/argus/ar0234_front_right/image_raw" /> -->
-        <param name="camera_input_topic" value="d435i_2/color/image_raw" />
-        <param name="lidar_input_topic" value="velodyne_points" />
+    <node ns="multijackal_02" pkg="draconis_demo_datafeed" name="draconis_demo_datafeed_2" type="data_feed_node.py" output="screen">
+        <param name="camera_input_topic" value="/argus/ar0234_front_right/image_raw" />
+        <!-- <param name="camera_input_topic" value="d435i_2/color/image_raw" /> -->
+        <param name="lidar_input_topic" value="modified_velodyne_points" />
+
+        <param name="modified_argus_front_right_output_topic" value="modified_argus_front_right" />
         <param name="image_cloud_output_topic" value="image_and_cloud" />
-        <param name="output_framerate" value="2" type="double"/>
+        <param name="output_framerate" value="4" type="double"/>
     </node>
 </launch>
