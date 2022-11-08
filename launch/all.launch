@@ -1,0 +1,12 @@
+<launch>
+    <group ns="$(env DOG_NAME)">
+    
+        <!-- <include file="$(dirname)/node_data_for_vision_perception.launch" /> -->
+
+        <include file="$(dirname)/node_data_for_obstacle_detection.launch" />
+
+    </group>
+
+    <node name="l515_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 map $(env DOG_NAME)/l515 100" />
+
+</launch>

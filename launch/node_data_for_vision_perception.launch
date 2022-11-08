@@ -1,0 +1,12 @@
+<launch>
+    <node name="node_data_for_vision_perception" pkg="draconis_demo_datafeed" type="node_data_for_vision_perception.py" output="screen">
+        <param name="camera_input_topic" value="/argus/ar0234_front_right/image_raw" />
+        <!-- <param name="camera_input_topic" value="/$(env DOG_NAME)/d435i_2/color/image_raw" /> -->
+        <param name="lidar_input_topic" value="/$(env DOG_NAME)/modified_velodyne_points" />
+
+        <param name="modified_argus_front_right_output_topic" value="/$(env DOG_NAME)/modified_argus_front_right" />
+        <param name="image_cloud_output_topic" value="/$(env DOG_NAME)/image_and_cloud" />
+
+        <param name="output_framerate" value="4" type="double"/>
+    </node>
+</launch>

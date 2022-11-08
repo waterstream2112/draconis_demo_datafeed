@@ -9,10 +9,10 @@ from draconis_demo_custom_msgs.msg import ImagePointcloudMsg
 # from timeit import default_timer as timer 
 
 
-__NODE_NAME = "data_feed_node"
+__NODE_NAME = "node_data_for_vision_perception"
 
 
-class DataFeedNode():
+class NodeDataForVisionPerception():
     def __init__(self) -> None:
         
         self.__cameraTopic = rospy.get_param("~camera_input_topic")
@@ -40,6 +40,7 @@ class DataFeedNode():
         self.__imageCloudPub = rospy.Publisher(self.__imageCloudOutputTopic, ImagePointcloudMsg, queue_size=5, tcp_nodelay=True)
         self.__modifiedImagePub = rospy.Publisher(self.__modifiedImageOutputTopic, Image, queue_size=5, tcp_nodelay=True)
 
+
     def __image_cloud_receiving_callback(self, image: Image, cloud: PointCloud2 ):
         
         rospy.loginfo("__image_cloud_receiving_callback")
@@ -58,14 +59,17 @@ class DataFeedNode():
 
         self.__imageCloudPub.publish(self.__imageCloudPackage)
 
+
     def __image_callback(self, image: Image):
         rospy.loginfo(f"__image_callback {(rospy.Time.now() - image.header.stamp).to_sec() : 0.2f}")
 
         image.header.stamp = rospy.Time.now()
         self.__modifiedImagePub.publish(image)
 
+
     def __cloud_callback(self, cloud: PointCloud2):
         rospy.loginfo(f"__cloud_callback {(rospy.Time.now() - cloud.header.stamp).to_sec() : 0.2f}")
+
 
     def onShutDown(self):
         pass
@@ -75,7 +79,7 @@ if __name__ == "__main__":
     rospy.init_node(__NODE_NAME)
     rospy.loginfo("Start " + __NODE_NAME)
 
-    __node = DataFeedNode()
+    __node = NodeDataForVisionPerception()
 
     rospy.on_shutdown(__node.onShutDown)
     rospy.spin()   
