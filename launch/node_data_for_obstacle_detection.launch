@@ -12,7 +12,7 @@
         <param name="init_frame_rot_z" value="-90" type="double"/>
         <param name="init_frame_trans_x" value="4" type="double"/>
         <param name="init_frame_trans_z" value="4" type="double"/>
-        <param name="init_frame_rot_x" value="-15" type="double"/>
+        <param name="init_frame_rot_x" value="0" type="double"/>
 
     </node>
 </launch>

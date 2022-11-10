@@ -173,7 +173,8 @@ public:
             point[3] = 1.0f;
 
             Eigen::Vector4f newPoint;
-            newPoint = l515TransformMatrix * point;
+            // newPoint = l515TransformMatrix * point;
+            newPoint = point;
 
             // Only get points within limits
             // if (((xMin < newPoint[0]) && (newPoint[0] < xMax)) &&
@@ -187,7 +188,7 @@ public:
         //--- Do tf transform
         geometry_msgs::TransformStamped transform;
         try {
-            transform = tfBuffer.lookupTransform(cloudOutFrameId, initTransformFrameId, ros::Time(0));
+            transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, ros::Time(0));
             ROS_INFO("target frame %s", cloudOutFrameId.c_str());
             ROS_INFO("source frame %s", cloudMsg->header.frame_id.c_str());
         } catch (tf2::TransformException &ex) {
