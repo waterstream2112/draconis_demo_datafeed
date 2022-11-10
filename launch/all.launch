@@ -7,6 +7,6 @@
 
     </group>
 
-    <node name="l515_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 map $(env DOG_NAME)/l515 100" />
+    <!-- <node name="l515_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 map $(env DOG_NAME)/l515 100" /> -->
 
 </launch>

@@ -49,11 +49,13 @@ private:
 
     ros::Duration samplingPeriod;
     std::string cloudOutFrameId;
+    std::string initTransformFrameId;
 
     ros::Time prevCycleTime;
 
     tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener* tfListener;
+    Eigen::Transform <float, 3, Eigen::Affine> l515TransformMatrix;
 
     ros::Subscriber cloudSub;
 
@@ -72,10 +74,24 @@ public:
         cloudOutFrameId = readParam<std::string>(nh, "cloud_out_frame_id");
         samplingPeriod = ros::Duration(1.0 / readParam<double>(nh, "sampling_rate"));
 
+        initTransformFrameId = readParam<std::string>(nh, "init_transform_frame_id");
+
+        double initFrameRotY = readParam<double>(nh, "init_frame_rot_y"); 
+        double initFrameRotZ = readParam<double>(nh, "init_frame_rot_z");
+        double initFrameTransX = readParam<double>(nh, "init_frame_trans_x");
+        double initFrameTransZ = readParam<double>(nh, "init_frame_trans_z");
+        double initFrameRotX = readParam<double>(nh, "init_frame_rot_x");
+
         //--- Initialize others
         prevCycleTime = ros::Time(1);
 
         tfListener = new tf2_ros::TransformListener(tfBuffer);
+
+        l515TransformMatrix = Eigen::Transform <float, 3, Eigen::Affine>::Identity() ;
+        // l515TransformMatrix.translate( Eigen::Vector3f (0.0f, 0.0f, -0.12f) ) ;
+        l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotY / 180 , Eigen::Vector3f::UnitY () ) ) ;
+        l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotZ / 180, Eigen::Vector3f::UnitZ () ) ) ;
+        l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotX / 180, Eigen::Vector3f::UnitX () ) ) ;
 
         //--- Initialize Subscribers
         cloudSub = nh.subscribe(topicCloudIn, 
@@ -132,43 +148,69 @@ public:
         //--- Get cloud msg and convert to pcl pointcloud
         // pcl::PointCloud<pcl::PointXYZ>::Ptr cloudIn(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloud(new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloudPclIn(new pcl::PointCloud<pcl::PointXYZ>);
         // std::string sourceFrameId = cloudMsg->header.frame_id;
 
-        pcl::fromROSMsg(*cloudMsg, *processedCloud);
+        pcl::fromROSMsg(*cloudMsg, *cloudPclIn);
 
         ROS_INFO("cloudHandler-2");
 
         //--- Down sample and Filter the pointcloud
-        downSample(processedCloud);
-        filterNoise(processedCloud);
+        downSample(cloudPclIn);
+        filterNoise(cloudPclIn);
 
         ROS_INFO("cloudHandler-3");
 
-        //--- Do tf transform
-        geometry_msgs::TransformStamped transform;
-        try {
-            transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, ros::Time(0));
-            ROS_INFO("target frame %s", cloudOutFrameId.c_str());
-            ROS_INFO("source frame %s", cloudMsg->header.frame_id.c_str());
-        } catch (tf2::TransformException &ex) {
-            ROS_WARN("%s", ex.what());
-            return;
+        //--- Do some more transform to adjust error in measurement
+        pcl::PointCloud<pcl::PointXYZ>::Ptr transformedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
+        
+        for (size_t i = 0; i < cloudPclIn->points.size(); i++)
+        {
+            Eigen::Vector4f point;
+            point[0] = cloudPclIn->points[i].x;
+            point[1] = cloudPclIn->points[i].y;
+            point[2] = cloudPclIn->points[i].z;
+            point[3] = 1.0f;
+
+            Eigen::Vector4f newPoint;
+            newPoint = l515TransformMatrix * point;
+
+            // Only get points within limits
+            // if (((xMin < newPoint[0]) && (newPoint[0] < xMax)) &&
+            //     ((yMin < newPoint[1]) && (newPoint[1] < yMax)) &&
+            //     ((zMin < newPoint[2]) && (newPoint[2] < zMax)))
+            {
+                transformedCloudOut->push_back(pcl::PointXYZ(newPoint[0], newPoint[1], newPoint[2]));
+            }
         }
 
-        ROS_INFO("cloudHandler-4");
+        //--- Do tf transform
+        // geometry_msgs::TransformStamped transform;
+        // try {
+        //     transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, ros::Time(0));
+        //     ROS_INFO("target frame %s", cloudOutFrameId.c_str());
+        //     ROS_INFO("source frame %s", cloudMsg->header.frame_id.c_str());
+        // } catch (tf2::TransformException &ex) {
+        //     ROS_WARN("%s", ex.what());
+        //     return;
+        // }
 
-        Eigen::Matrix4d matrix = tf2::transformToEigen(transform).matrix();
+        // ROS_INFO("cloudHandler-4");
 
-        pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
-        pcl::transformPointCloud(*processedCloud, *processedCloudOut, matrix);
+        // Eigen::Matrix4d matrix = tf2::transformToEigen(transform).matrix();
 
-        ROS_INFO("cloudHandler-5");
+        // pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
+        // pcl::transformPointCloud(*processedCloud, *processedCloudOut, matrix);
+
+        // ROS_INFO("cloudHandler-5");
+
+        
 
         //--- Publish the processed pointcloud
         sensor_msgs::PointCloud2 cloudOut;
-        pcl::toROSMsg(*processedCloudOut, cloudOut);
+        pcl::toROSMsg(*transformedCloudOut, cloudOut);
 
-        cloudOut.header.frame_id = cloudOutFrameId;
+        cloudOut.header.frame_id = initTransformFrameId;// cloudOutFrameId;
         cloudOut.header.stamp = cloudMsg->header.stamp;
 
         cloudPub.publish(cloudOut);
