@@ -88,7 +88,7 @@ public:
         tfListener = new tf2_ros::TransformListener(tfBuffer);
 
         l515TransformMatrix = Eigen::Transform <float, 3, Eigen::Affine>::Identity() ;
-        l515TransformMatrix.translate( Eigen::Vector3f (0.0f, 0.0f, 0.55f) ) ;
+        // l515TransformMatrix.translate( Eigen::Vector3f (0.0f, 0.0f, 0.55f) ) ;
         l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotY / 180 , Eigen::Vector3f::UnitY () ) ) ;
         l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotZ / 180, Eigen::Vector3f::UnitZ () ) ) ;
         l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotX / 180, Eigen::Vector3f::UnitX () ) ) ;
@@ -185,32 +185,30 @@ public:
         }
 
         //--- Do tf transform
-        // geometry_msgs::TransformStamped transform;
-        // try {
-        //     transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, ros::Time(0));
-        //     ROS_INFO("target frame %s", cloudOutFrameId.c_str());
-        //     ROS_INFO("source frame %s", cloudMsg->header.frame_id.c_str());
-        // } catch (tf2::TransformException &ex) {
-        //     ROS_WARN("%s", ex.what());
-        //     return;
-        // }
+        geometry_msgs::TransformStamped transform;
+        try {
+            transform = tfBuffer.lookupTransform(cloudOutFrameId, initTransformFrameId, ros::Time(0));
+            ROS_INFO("target frame %s", cloudOutFrameId.c_str());
+            ROS_INFO("source frame %s", cloudMsg->header.frame_id.c_str());
+        } catch (tf2::TransformException &ex) {
+            ROS_WARN("%s", ex.what());
+            return;
+        }
 
-        // ROS_INFO("cloudHandler-4");
+        ROS_INFO("cloudHandler-4");
 
-        // Eigen::Matrix4d matrix = tf2::transformToEigen(transform).matrix();
+        Eigen::Matrix4d matrix = tf2::transformToEigen(transform).matrix();
 
-        // pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
-        // pcl::transformPointCloud(*processedCloud, *processedCloudOut, matrix);
+        pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::transformPointCloud(*transformedCloudOut, *processedCloudOut, matrix);
 
-        // ROS_INFO("cloudHandler-5");
-
-        
+        ROS_INFO("cloudHandler-5");
 
         //--- Publish the processed pointcloud
         sensor_msgs::PointCloud2 cloudOut;
-        pcl::toROSMsg(*transformedCloudOut, cloudOut);
+        pcl::toROSMsg(*processedCloudOut, cloudOut);
 
-        cloudOut.header.frame_id = initTransformFrameId;// cloudOutFrameId;
+        cloudOut.header.frame_id = cloudOutFrameId;
         cloudOut.header.stamp = cloudMsg->header.stamp;
 
         cloudPub.publish(cloudOut);
