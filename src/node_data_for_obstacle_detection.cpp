@@ -88,7 +88,7 @@ public:
         tfListener = new tf2_ros::TransformListener(tfBuffer);
 
         l515TransformMatrix = Eigen::Transform <float, 3, Eigen::Affine>::Identity() ;
-        // l515TransformMatrix.translate( Eigen::Vector3f (0.0f, 0.0f, -0.12f) ) ;
+        l515TransformMatrix.translate( Eigen::Vector3f (0.0f, 0.0f, 0.55f) ) ;
         l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotY / 180 , Eigen::Vector3f::UnitY () ) ) ;
         l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotZ / 180, Eigen::Vector3f::UnitZ () ) ) ;
         l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotX / 180, Eigen::Vector3f::UnitX () ) ) ;
