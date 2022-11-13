@@ -50,6 +50,7 @@ private:
     ros::Duration samplingPeriod;
     std::string cloudOutFrameId;
     std::string initTransformFrameId;
+    double leafSizeDownSample;
 
     ros::Time prevCycleTime;
 
@@ -72,9 +73,10 @@ public:
         std::string topicCloudOut = readParam<std::string>(nh, "topic_cloud_out");
 
         cloudOutFrameId = readParam<std::string>(nh, "cloud_out_frame_id");
-        samplingPeriod = ros::Duration(1.0 / readParam<double>(nh, "sampling_rate"));
+        samplingPeriod = ros::Duration(1.0 / readParam<double>(nh, "sampling_rate")); 
+        leafSizeDownSample = readParam<double>(nh, "leaf_size_down_sample");
 
-        initTransformFrameId = readParam<std::string>(nh, "init_transform_frame_id");
+        initTransformFrameId = readParam<std::string>(nh, "init_transform_frame_id"); 
 
         double initFrameRotY = readParam<double>(nh, "init_frame_rot_y"); 
         double initFrameRotZ = readParam<double>(nh, "init_frame_rot_z");
@@ -221,7 +223,7 @@ public:
         pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloud (new pcl::PointCloud<pcl::PointXYZ>);
         pcl::VoxelGrid<pcl::PointXYZ> vg;
         vg.setInputCloud (cloud);
-        vg.setLeafSize (0.01f, 0.01f, 0.01f);
+        vg.setLeafSize (leafSizeDownSample, leafSizeDownSample, leafSizeDownSample);
         vg.filter (*processedCloud);
 
         cloud = processedCloud;

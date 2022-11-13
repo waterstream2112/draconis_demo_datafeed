@@ -6,6 +6,7 @@
 
         <param name="cloud_out_frame_id" value="$(env DOG_NAME)/map" type="str" />
         <param name="sampling_rate" value="4" type="double"/>
+        <param name="leaf_size_down_sample" value="0.015" type="double"/>
 
         <param name="init_transform_frame_id" value="$(env DOG_NAME)/l515_link" type="str"/>
         <param name="init_frame_rot_y" value="90" type="double"/>
