@@ -1,5 +1,5 @@
 <launch>
-    <group ns="$(env DOG_NAME)">
+    <group ns="$(env ROBOT_NAMESPACE)">
     
         <!-- <include file="$(dirname)/node_data_for_vision_perception.launch" /> -->
 
