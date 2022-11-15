@@ -190,7 +190,8 @@ public:
         //--- Do tf transform
         geometry_msgs::TransformStamped transform;
         try {
-            transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, ros::Time(0));
+            // transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, ros::Time(0));
+            transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, cloudMsg->header.stamp);
             ROS_INFO("target frame %s", cloudOutFrameId.c_str());
             ROS_INFO("source frame %s", cloudMsg->header.frame_id.c_str());
         } catch (tf2::TransformException &ex) {
