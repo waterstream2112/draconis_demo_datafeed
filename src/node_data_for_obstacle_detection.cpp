@@ -91,9 +91,9 @@ public:
 
         l515TransformMatrix = Eigen::Transform <float, 3, Eigen::Affine>::Identity() ;
         // l515TransformMatrix.translate( Eigen::Vector3f (0.0f, 0.0f, 0.55f) ) ;
-        l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotY / 180 , Eigen::Vector3f::UnitY () ) ) ;
-        l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotZ / 180, Eigen::Vector3f::UnitZ () ) ) ;
-        l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotX / 180, Eigen::Vector3f::UnitX () ) ) ;
+        // l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotY / 180 , Eigen::Vector3f::UnitY () ) ) ;
+        // l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotZ / 180, Eigen::Vector3f::UnitZ () ) ) ;
+        // l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotX / 180, Eigen::Vector3f::UnitX () ) ) ;
 
         //--- Initialize Subscribers
         cloudSub = nh.subscribe(topicCloudIn, 
@@ -132,13 +132,17 @@ public:
         ros::Duration period = ros::Time::now() - prevCycleTime;
 
         if (period < samplingPeriod)
+        {
             return;
+        }
+        
+        ROS_INFO("receiveCloudCallback, period=%0.3f", period.toSec());
 
         prevCycleTime = ros::Time::now();
 
-        ROS_INFO("receiveCloudCallback");
-        ROS_INFO("cloud frame: %s", cloudPtr->header.frame_id.c_str());
+        ROS_INFO("receiveCloudCallback, cloud frame: %s", cloudPtr->header.frame_id.c_str());
 
+        
         cloudHandler(cloudPtr);
 
     }
@@ -146,50 +150,59 @@ public:
 
     void cloudHandler(const sensor_msgs::PointCloud2ConstPtr &cloudMsg)
     {
-        ROS_INFO("cloudHandler-1");
+        
         //--- Get cloud msg and convert to pcl pointcloud
-        // pcl::PointCloud<pcl::PointXYZ>::Ptr cloudIn(new pcl::PointCloud<pcl::PointXYZ>);
+        ROS_INFO("cloudHandler-1");
+
         pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloud(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloudPclIn(new pcl::PointCloud<pcl::PointXYZ>);
-        // std::string sourceFrameId = cloudMsg->header.frame_id;
 
         pcl::fromROSMsg(*cloudMsg, *cloudPclIn);
 
-        ROS_INFO("cloudHandler-2");
 
         //--- Down sample and Filter the pointcloud
+        ROS_INFO("cloudHandler-2");
+
         downSample(cloudPclIn);
         filterNoise(cloudPclIn);
 
+
+        //--- Do some more transform before go through tf transform
         ROS_INFO("cloudHandler-3");
 
-        //--- Do some more transform to adjust error in measurement
         pcl::PointCloud<pcl::PointXYZ>::Ptr transformedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
+        // double xMin=0, xMax=4;
+        // double yMin=-2.5, yMax=2.5;
+        // double zMin=0.0, zMax=0.5;
         
-        for (size_t i = 0; i < cloudPclIn->points.size(); i++)
-        {
-            Eigen::Vector4f point;
-            point[0] = cloudPclIn->points[i].x;
-            point[1] = cloudPclIn->points[i].y;
-            point[2] = cloudPclIn->points[i].z;
-            point[3] = 1.0f;
+        // for (size_t i = 0; i < cloudPclIn->points.size(); i++)
+        // {
+        //     Eigen::Vector4f point;
+        //     point[0] = cloudPclIn->points[i].x;
+        //     point[1] = cloudPclIn->points[i].y;
+        //     point[2] = cloudPclIn->points[i].z;
+        //     point[3] = 1.0f;
 
-            Eigen::Vector4f newPoint;
-            // newPoint = l515TransformMatrix * point;
-            newPoint = point;
+        //     Eigen::Vector4f newPoint;
+        //     newPoint = l515TransformMatrix * point;
 
-            // Only get points within limits
-            // if (((xMin < newPoint[0]) && (newPoint[0] < xMax)) &&
-            //     ((yMin < newPoint[1]) && (newPoint[1] < yMax)) &&
-            //     ((zMin < newPoint[2]) && (newPoint[2] < zMax)))
-            {
-                transformedCloudOut->push_back(pcl::PointXYZ(newPoint[0], newPoint[1], newPoint[2]));
-            }
-        }
+        //     // Only get points within limits
+        //     if (((xMin < newPoint[0]) && (newPoint[0] < xMax)) &&
+        //         ((yMin < newPoint[1]) && (newPoint[1] < yMax)) &&
+        //         ((zMin < newPoint[2]) && (newPoint[2] < zMax)))
+        //     {
+        //         transformedCloudOut->push_back(pcl::PointXYZ(newPoint[0], newPoint[1], newPoint[2]));
+        //     }
+        // }
+
+        transformedCloudOut = cloudPclIn;
+
+        ROS_INFO("cloudHandler: Time0=%0.2f, cloudMsg=%0.2f", ros::Time::now().toSec(), cloudMsg->header.stamp.toSec());
 
         //--- Do tf transform
         geometry_msgs::TransformStamped transform;
         try {
+            
             // transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, ros::Time(0));
             transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, cloudMsg->header.stamp);
             ROS_INFO("target frame %s", cloudOutFrameId.c_str());
@@ -206,9 +219,10 @@ public:
         pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::transformPointCloud(*transformedCloudOut, *processedCloudOut, matrix);
 
+        
+        //--- Publish the processed pointcloud
         ROS_INFO("cloudHandler-5");
 
-        //--- Publish the processed pointcloud
         sensor_msgs::PointCloud2 cloudOut;
         pcl::toROSMsg(*processedCloudOut, cloudOut);
 
