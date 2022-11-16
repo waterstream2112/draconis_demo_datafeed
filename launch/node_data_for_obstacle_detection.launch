@@ -1,8 +1,8 @@
 <launch>
     <node name="node_data_for_obstacle_detection" pkg="draconis_demo_datafeed" type="node_data_for_obstacle_detection" output="screen">
 
-        <!-- <param name="topic_cloud_in" value="/$(env ROBOT_NAMESPACE)/modified_l515_points" type="str" /> -->
-        <param name="topic_cloud_in" value="/$(env ROBOT_NAMESPACE)/l515/depth/color/points" type="str" />
+        <param name="topic_cloud_in" value="/$(env ROBOT_NAMESPACE)/modified_l515_points" type="str" />
+        <!-- <param name="topic_cloud_in" value="/$(env ROBOT_NAMESPACE)/l515/depth/color/points" type="str" /> -->
         <param name="topic_cloud_out" value="/$(env ROBOT_NAMESPACE)/l515_cloud" type="str" /> 
 
         <param name="cloud_out_frame_id" value="$(env ROBOT_NAMESPACE)/odom" type="str" />
