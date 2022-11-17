@@ -181,6 +181,9 @@ public:
 
 
         //----------------
+        if (currentOdom == NULL)
+            return;
+
         receivedCloud = cloudPtr;
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
