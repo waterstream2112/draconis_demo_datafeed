@@ -6,7 +6,7 @@
         <param name="topic_cloud_out" value="/$(env ROBOT_NAMESPACE)/l515_cloud" type="str" /> 
 
         <param name="cloud_out_frame_id" value="$(env ROBOT_NAMESPACE)/map" type="str" />
-        <param name="sampling_rate" value="10" type="double"/>
+        <param name="sampling_rate" value="4" type="double"/>
         <param name="leaf_size_down_sample" value="0.015" type="double"/>
 
         <param name="init_transform_frame_id" value="$(env ROBOT_NAMESPACE)/l515_link" type="str"/>

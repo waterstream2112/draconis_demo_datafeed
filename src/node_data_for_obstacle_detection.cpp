@@ -109,11 +109,11 @@ public:
                                 this, 
                                 ros::TransportHints().tcpNoDelay());
 
-        odomSub = nh.subscribe("/multijackal_01/odom", 
-                                5, 
-                                &DataForObstacleDetectionNode::odomCallback, 
-                                this, 
-                                ros::TransportHints().tcpNoDelay());
+        // odomSub = nh.subscribe("/multijackal_01/odom", 
+        //                         5, 
+        //                         &DataForObstacleDetectionNode::odomCallback, 
+        //                         this, 
+        //                         ros::TransportHints().tcpNoDelay());
 
         
         //--- Initialize Publishers
@@ -177,39 +177,39 @@ public:
 
         
         
-        // cloudHandler(cloudPtr);
+        cloudHandler(cloudPtr);
 
 
         //----------------
-        if (currentOdom == NULL)
-            return;
+        // if (currentOdom == NULL)
+        //     return;
 
-        receivedCloud = cloudPtr;
+        // receivedCloud = cloudPtr;
 
-        pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloudIn(new pcl::PointCloud<pcl::PointXYZ>);
+        // pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
+        // pcl::PointCloud<pcl::PointXYZ>::Ptr cloudIn(new pcl::PointCloud<pcl::PointXYZ>);
 
-        pcl::fromROSMsg(*receivedCloud, *cloudIn);
+        // pcl::fromROSMsg(*receivedCloud, *cloudIn);
 
-        downSample(cloudIn);
-        filterNoise(cloudIn);
+        // downSample(cloudIn);
+        // filterNoise(cloudIn);
 
-        odomTransform.transform.translation.x = currentOdom->pose.pose.position.x;
-        odomTransform.transform.translation.y = currentOdom->pose.pose.position.y;
-        odomTransform.transform.translation.z = currentOdom->pose.pose.position.z;
-        odomTransform.transform.rotation = currentOdom->pose.pose.orientation;
+        // odomTransform.transform.translation.x = currentOdom->pose.pose.position.x;
+        // odomTransform.transform.translation.y = currentOdom->pose.pose.position.y;
+        // odomTransform.transform.translation.z = currentOdom->pose.pose.position.z;
+        // odomTransform.transform.rotation = currentOdom->pose.pose.orientation;
 
-        Eigen::Matrix4d matrix = tf2::transformToEigen(odomTransform).matrix();
+        // Eigen::Matrix4d matrix = tf2::transformToEigen(odomTransform).matrix();
 
-        pcl::transformPointCloud(*cloudIn, *processedCloudOut, matrix);
+        // pcl::transformPointCloud(*cloudIn, *processedCloudOut, matrix);
 
-        sensor_msgs::PointCloud2 cloudOut;
-        pcl::toROSMsg(*processedCloudOut, cloudOut);
+        // sensor_msgs::PointCloud2 cloudOut;
+        // pcl::toROSMsg(*processedCloudOut, cloudOut);
 
-        cloudOut.header.frame_id = cloudOutFrameId;
-        cloudOut.header.stamp = receivedCloud->header.stamp;
+        // cloudOut.header.frame_id = cloudOutFrameId;
+        // cloudOut.header.stamp = receivedCloud->header.stamp;
 
-        cloudPub.publish(cloudOut);
+        // cloudPub.publish(cloudOut);
 
     }
 
