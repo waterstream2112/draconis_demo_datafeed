@@ -8,6 +8,10 @@
 #include <nav_msgs/Odometry.h>
 #include <visualization_msgs/Marker.h>
 
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
+
 #include <tf/tf.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_eigen/tf2_eigen.h>
@@ -45,6 +49,8 @@
 #include <iostream>
 #include <fstream>
 
+
+
 class DataForObstacleDetectionNode
 {
 private:
@@ -64,6 +70,10 @@ private:
     sensor_msgs::PointCloud2ConstPtr receivedCloud;
     nav_msgs::OdometryConstPtr currentOdom;
 
+    typedef message_filters::sync_policies::ApproximateTime<nav_msgs::Odometry, sensor_msgs::PointCloud2> MySyncPolicy;
+    typedef message_filters::Synchronizer<MySyncPolicy> Sync;
+    boost::shared_ptr<Sync> sync;
+
     ros::Subscriber cloudSub;
     ros::Subscriber odomSub;
 
@@ -77,6 +87,7 @@ public:
 
         //--- Read params
         std::string topicCloudIn = readParam<std::string>(nh, "topic_cloud_in");
+        std::string topicOdomIn = readParam<std::string>(nh, "topic_odom_in");
         std::string topicCloudOut = readParam<std::string>(nh, "topic_cloud_out");
 
         cloudOutFrameId = readParam<std::string>(nh, "cloud_out_frame_id");
@@ -102,12 +113,22 @@ public:
         // l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotZ / 180, Eigen::Vector3f::UnitZ () ) ) ;
         // l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotX / 180, Eigen::Vector3f::UnitX () ) ) ;
 
+        //--- Initialize synchronizer
+        message_filters::Subscriber<nav_msgs::Odometry> odomFilter(nh, topicOdomIn, 1);
+        message_filters::Subscriber<sensor_msgs::PointCloud2> cloudFilter(nh, topicCloudIn, 1);
+
+        MySyncPolicy syncPolicy(MySyncPolicy(5));
+        syncPolicy.setMaxIntervalDuration(ros::Duration(0.1));
+        sync.reset(new Sync(syncPolicy, odomFilter, cloudFilter));      
+        sync->registerCallback(boost::bind(&DataForObstacleDetectionNode::syncCallback, this, _1, _2));
+
+
         //--- Initialize Subscribers
-        cloudSub = nh.subscribe(topicCloudIn, 
-                                5, 
-                                &DataForObstacleDetectionNode::receiveCloudCallback, 
-                                this, 
-                                ros::TransportHints().tcpNoDelay());
+        // cloudSub = nh.subscribe(topicCloudIn, 
+        //                         5, 
+        //                         &DataForObstacleDetectionNode::receiveCloudCallback, 
+        //                         this, 
+        //                         ros::TransportHints().tcpNoDelay());
 
         // odomSub = nh.subscribe("/multijackal_01/odom", 
         //                         5, 
@@ -136,6 +157,28 @@ public:
             n.shutdown();
         }
         return ans;
+    }
+
+
+    void syncCallback(const nav_msgs::OdometryConstPtr &odomPtr, const sensor_msgs::PointCloud2ConstPtr &cloudPtr)
+    {
+        //--- Only process if duration reach setting rate
+        ros::Duration period = ros::Time::now() - prevCycleTime;
+
+        if (period < samplingPeriod)
+        {
+            return;
+        }
+        
+        ROS_INFO("syncCallback, period=%0.3f", period.toSec());
+        prevCycleTime = ros::Time::now();
+
+        ROS_INFO("syncCallback, odom stamp=%0.2f, cloud stamp=%0.2f", odomPtr->header.stamp, cloudPtr->header.stamp);
+
+
+        //--- process pointcloud
+        // cloudHandler(cloudPtr);
+
     }
 
 
@@ -252,7 +295,7 @@ public:
         //     Eigen::Vector4f newPoint;
         //     newPoint = l515TransformMatrix * point;
 
-        //     // Only get points within limits
+        //     Only get points within limits
         //     if (((xMin < newPoint[0]) && (newPoint[0] < xMax)) &&
         //         ((yMin < newPoint[1]) && (newPoint[1] < yMax)) &&
         //         ((zMin < newPoint[2]) && (newPoint[2] < zMax)))
@@ -269,8 +312,8 @@ public:
         geometry_msgs::TransformStamped transform;
         try {
             
-            transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, ros::Time(0));
-            // transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, cloudMsg->header.stamp);
+            // transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, ros::Time(0));
+            transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, cloudMsg->header.stamp);
             ROS_INFO("target frame %s", cloudOutFrameId.c_str());
             ROS_INFO("source frame %s", cloudMsg->header.frame_id.c_str());
             ROS_INFO("transform stamp %0.5f", transform.header.stamp.toSec());
