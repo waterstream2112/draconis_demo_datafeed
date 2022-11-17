@@ -197,7 +197,7 @@ public:
 
         transformedCloudOut = cloudPclIn;
 
-        ROS_INFO("cloudHandler: Time0=%0.2f, cloudMsg=%0.2f", ros::Time::now().toSec(), cloudMsg->header.stamp.toSec());
+        ROS_INFO("cloudHandler: Time0=%0.2f, cloudMsg=%0.5f", ros::Time::now().toSec(), cloudMsg->header.stamp.toSec());
 
         //--- Do tf transform
         geometry_msgs::TransformStamped transform;
@@ -207,6 +207,7 @@ public:
             transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, cloudMsg->header.stamp);
             ROS_INFO("target frame %s", cloudOutFrameId.c_str());
             ROS_INFO("source frame %s", cloudMsg->header.frame_id.c_str());
+            ROS_INFO("transform stamp %0.5f", transform.header.stamp.toSec());
         } catch (tf2::TransformException &ex) {
             ROS_WARN("%s", ex.what());
             return;
