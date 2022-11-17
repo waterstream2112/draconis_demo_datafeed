@@ -12,6 +12,7 @@ roscpp
 rospy
 std_msgs
 sensor_msgs
+nav_msgs
 pcl_conversions
 pcl_ros
 tf

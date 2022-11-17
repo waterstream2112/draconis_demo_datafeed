@@ -4,8 +4,11 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <nav_msgs/Odometry.h>
 #include <visualization_msgs/Marker.h>
 
+#include <tf/tf.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_eigen/tf2_eigen.h>
 
@@ -57,8 +60,12 @@ private:
     tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener* tfListener;
     Eigen::Transform <float, 3, Eigen::Affine> l515TransformMatrix;
+    geometry_msgs::TransformStamped odomTransform;
+    sensor_msgs::PointCloud2ConstPtr receivedCloud;
+    nav_msgs::OdometryConstPtr currentOdom;
 
     ros::Subscriber cloudSub;
+    ros::Subscriber odomSub;
 
     ros::Publisher cloudPub;
 
@@ -102,6 +109,12 @@ public:
                                 this, 
                                 ros::TransportHints().tcpNoDelay());
 
+        odomSub = nh.subscribe("/multijackal_01/odom", 
+                                5, 
+                                &DataForObstacleDetectionNode::odomCallback, 
+                                this, 
+                                ros::TransportHints().tcpNoDelay());
+
         
         //--- Initialize Publishers
         cloudPub = nh.advertise<sensor_msgs::PointCloud2>(topicCloudOut, 5);
@@ -126,6 +139,26 @@ public:
     }
 
 
+    void odomCallback(const nav_msgs::OdometryConstPtr &odomPtr)
+    {
+        
+        tf::Quaternion q(
+            odomPtr->pose.pose.orientation.x,
+            odomPtr->pose.pose.orientation.y,
+            odomPtr->pose.pose.orientation.z,
+            odomPtr->pose.pose.orientation.w);
+        tf::Matrix3x3 m(q);
+        double roll, pitch, yaw;
+        m.getRPY(roll, pitch, yaw);
+
+
+        ROS_INFO("time: %0.2f, yaw: %0.2f", ros::Time::now().toSec(), yaw);
+
+        currentOdom = odomPtr;
+
+    }
+
+
     void receiveCloudCallback(const sensor_msgs::PointCloud2ConstPtr &cloudPtr)
     {
         //--- Only process if duration reach setting rate
@@ -143,7 +176,37 @@ public:
         ROS_INFO("receiveCloudCallback, cloud frame: %s", cloudPtr->header.frame_id.c_str());
 
         
-        cloudHandler(cloudPtr);
+        
+        // cloudHandler(cloudPtr);
+
+
+        //----------------
+        receivedCloud = cloudPtr;
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloudIn(new pcl::PointCloud<pcl::PointXYZ>);
+
+        pcl::fromROSMsg(*receivedCloud, *cloudIn);
+
+        downSample(cloudIn);
+        filterNoise(cloudIn);
+
+        odomTransform.transform.translation.x = currentOdom->pose.pose.position.x;
+        odomTransform.transform.translation.y = currentOdom->pose.pose.position.y;
+        odomTransform.transform.translation.z = currentOdom->pose.pose.position.z;
+        odomTransform.transform.rotation = currentOdom->pose.pose.orientation;
+
+        Eigen::Matrix4d matrix = tf2::transformToEigen(odomTransform).matrix();
+
+        pcl::transformPointCloud(*cloudIn, *processedCloudOut, matrix);
+
+        sensor_msgs::PointCloud2 cloudOut;
+        pcl::toROSMsg(*processedCloudOut, cloudOut);
+
+        cloudOut.header.frame_id = cloudOutFrameId;
+        cloudOut.header.stamp = receivedCloud->header.stamp;
+
+        cloudPub.publish(cloudOut);
 
     }
 
