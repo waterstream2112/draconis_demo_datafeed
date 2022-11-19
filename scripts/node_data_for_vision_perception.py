@@ -27,7 +27,8 @@ class NodeDataForVisionPerception():
 
         self.__imageCloudPackage = ImagePointcloudMsg()
 
-        self.__imageFilter = message_filters.Subscriber(self.__modifiedImageOutputTopic, Image)
+        # self.__imageFilter = message_filters.Subscriber(self.__modifiedImageOutputTopic, Image)
+        self.__imageFilter = message_filters.Subscriber(self.__cameraTopic, Image)
         self.__cloudFilter = message_filters.Subscriber(self.__lidarTopic, PointCloud2)
         self.__sync = message_filters.ApproximateTimeSynchronizer([self.__imageFilter, self.__cloudFilter], \
                                                                   queue_size=5, \
@@ -63,8 +64,8 @@ class NodeDataForVisionPerception():
     def __image_callback(self, image: Image):
         rospy.loginfo(f"__image_callback {(rospy.Time.now() - image.header.stamp).to_sec() : 0.2f}")
 
-        image.header.stamp = rospy.Time.now()
-        self.__modifiedImagePub.publish(image)
+        # image.header.stamp = rospy.Time.now()
+        # self.__modifiedImagePub.publish(image)
 
 
     def __cloud_callback(self, cloud: PointCloud2):

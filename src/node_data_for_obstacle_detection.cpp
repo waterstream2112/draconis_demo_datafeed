@@ -113,22 +113,27 @@ public:
         // l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotZ / 180, Eigen::Vector3f::UnitZ () ) ) ;
         // l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotX / 180, Eigen::Vector3f::UnitX () ) ) ;
 
-        //--- Initialize synchronizer
-        message_filters::Subscriber<nav_msgs::Odometry> odomFilter(nh, topicOdomIn, 1);
-        message_filters::Subscriber<sensor_msgs::PointCloud2> cloudFilter(nh, topicCloudIn, 1);
 
-        MySyncPolicy syncPolicy(MySyncPolicy(5));
-        syncPolicy.setMaxIntervalDuration(ros::Duration(0.1));
-        sync.reset(new Sync(syncPolicy, odomFilter, cloudFilter));      
-        sync->registerCallback(boost::bind(&DataForObstacleDetectionNode::syncCallback, this, _1, _2));
+        // Eigen::Transform <float, 3, Eigen::Affine> tf_L515_Velodyne
+
+
+        //--- Initialize synchronizer
+        // message_filters::Subscriber<nav_msgs::Odometry> odomFilter(nh, topicOdomIn, 10);
+        // message_filters::Subscriber<sensor_msgs::PointCloud2> cloudFilter(nh, topicCloudIn, 10);
+
+        // MySyncPolicy syncPolicy(MySyncPolicy(5));
+        // syncPolicy.setMaxIntervalDuration(ros::Duration(0.1));
+        // sync.reset(new Sync(MySyncPolicy(5), odomFilter, cloudFilter));  
+        // sync->setMaxIntervalDuration(ros::Duration(0.5));    
+        // sync->registerCallback(boost::bind(&DataForObstacleDetectionNode::syncCallback, this, _1, _2));
 
 
         //--- Initialize Subscribers
-        // cloudSub = nh.subscribe(topicCloudIn, 
-        //                         5, 
-        //                         &DataForObstacleDetectionNode::receiveCloudCallback, 
-        //                         this, 
-        //                         ros::TransportHints().tcpNoDelay());
+        cloudSub = nh.subscribe(topicCloudIn, 
+                                5, 
+                                &DataForObstacleDetectionNode::receiveCloudCallback, 
+                                this, 
+                                ros::TransportHints().tcpNoDelay());
 
         // odomSub = nh.subscribe("/multijackal_01/odom", 
         //                         5, 
@@ -163,21 +168,21 @@ public:
     void syncCallback(const nav_msgs::OdometryConstPtr &odomPtr, const sensor_msgs::PointCloud2ConstPtr &cloudPtr)
     {
         //--- Only process if duration reach setting rate
-        ros::Duration period = ros::Time::now() - prevCycleTime;
+        // ros::Duration period = ros::Time::now() - prevCycleTime;
 
-        if (period < samplingPeriod)
-        {
-            return;
-        }
+        // if (period < samplingPeriod)
+        // {
+        //     return;
+        // }
         
-        ROS_INFO("syncCallback, period=%0.3f", period.toSec());
-        prevCycleTime = ros::Time::now();
+        // ROS_INFO("syncCallback, period=%0.3f", period.toSec());
+        // prevCycleTime = ros::Time::now();
 
         ROS_INFO("syncCallback, odom stamp=%0.2f, cloud stamp=%0.2f", odomPtr->header.stamp, cloudPtr->header.stamp);
 
 
         //--- process pointcloud
-        // cloudHandler(cloudPtr);
+        cloudHandler(cloudPtr);
 
     }
 
