@@ -3,9 +3,9 @@
 
     <group ns="$(env ROBOT_NAMESPACE)">
     
-        <include file="$(dirname)/node_data_for_vision_perception.launch" />
+        <!-- <include file="$(dirname)/node_data_for_vision_perception.launch" /> -->
 
-        <!-- <include file="$(dirname)/node_data_for_obstacle_detection.launch" /> -->
+        <include file="$(dirname)/node_data_for_obstacle_detection.launch" />
 
     </group>
 

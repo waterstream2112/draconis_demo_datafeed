@@ -9,5 +9,6 @@
         <param name="image_cloud_output_topic" value="/$(env ROBOT_NAMESPACE)/image_and_cloud" />
 
         <param name="output_framerate" value="4" type="double"/>
+        <param name="image_cloud_package_frame_id" value="$(env ROBOT_NAMESPACE)/map" type="str" />
     </node>
 </launch>
