@@ -67,7 +67,7 @@ class NodeDataForVisionPerception():
         #--- get TransformStamped
         self.__trans = TransformStamped()
         try:
-            self.__trans = self.__tfBuffer.lookup_transform(self.__imageCloudPackageFrameId, cloud.header.frame_id, cloud.header.stamp)
+            self.__trans = self.__tfBuffer.lookup_transform(self.__imageCloudPackageFrameId, cloud.header.frame_id, rospy.Time(0))
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             rospy.logerr("__image_cloud_receiving_callback, failed to get transform")
             return
@@ -77,18 +77,22 @@ class NodeDataForVisionPerception():
         self.__imageCloudPackage.pointcloud = cloud
         self.__imageCloudPackage.transform_stamped = self.__trans
 
+        rospy.loginfo("Publish imageCloudPackage")
         self.__imageCloudPub.publish(self.__imageCloudPackage)
 
 
     def __image_callback(self, image: Image):
-        rospy.loginfo(f"__image_callback {(rospy.Time.now() - image.header.stamp).to_sec() : 0.2f}")
+        # rospy.loginfo(f"__image_callback {(rospy.Time.now() - image.header.stamp).to_sec() : 0.2f}")
+        pass
 
         # image.header.stamp = rospy.Time.now()
         # self.__modifiedImagePub.publish(image)
 
 
     def __cloud_callback(self, cloud: PointCloud2):
-        rospy.loginfo(f"__cloud_callback {(rospy.Time.now() - cloud.header.stamp).to_sec() : 0.2f}")
+        # rospy.loginfo(f"__cloud_callback {(rospy.Time.now() - cloud.header.stamp).to_sec() : 0.2f}")
+        # rospy.loginfo(f"__cloud_callback {cloud.header.frame_id} ")
+        pass
 
 
     def onShutDown(self):
