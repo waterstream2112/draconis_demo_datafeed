@@ -1,3 +1,7 @@
+#if __INTELLISENSE__
+#undef __ARM_NEON
+#undef __ARM_NEON__
+#endif
 
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
