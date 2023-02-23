@@ -4,6 +4,7 @@
         <!-- <param name="topic_cloud_in" value="/$(env ROBOT_NAMESPACE)/modified_l515_points" type="str" /> -->
         <param name="topic_cloud_in" value="/$(env ROBOT_NAMESPACE)/l515/depth/color/points" type="str" />
         <param name="topic_odom_in" value="/$(env ROBOT_NAMESPACE)/odom" type="str" />
+        <param name="topic_odom_t265_in" value="/$(env ROBOT_NAMESPACE)/t265/odom/sample" type="str" />
         <param name="topic_cloud_out" value="/$(env ROBOT_NAMESPACE)/l515_cloud" type="str" /> 
 
         <param name="cloud_out_frame_id" value="$(env ROBOT_NAMESPACE)/map" type="str" />
@@ -11,11 +12,15 @@
         <param name="leaf_size_down_sample" value="0.015" type="double"/>
 
         <param name="init_transform_frame_id" value="$(env ROBOT_NAMESPACE)/l515_link" type="str"/>
-        <param name="init_frame_rot_y" value="90" type="double"/>
-        <param name="init_frame_rot_z" value="-90" type="double"/>
-        <param name="init_frame_trans_x" value="4" type="double"/>
-        <param name="init_frame_trans_z" value="4" type="double"/>
-        <param name="init_frame_rot_x" value="0" type="double"/>
+        <param name="init_l515_rot_x" value="0" type="double"/>
+        <param name="init_l515_rot_y" value="90" type="double"/>
+        <param name="init_l515_rot_z" value="-90" type="double"/>
+        <param name="init_l515_trans_x" value="4" type="double"/>
+        <param name="init_l515_trans_y" value="4" type="double"/>
+        <param name="init_l515_trans_z" value="4" type="double"/>
+
+        <param name="init_lidar_trans_z" value="4" type="double"/>
+        
 
     </node>
 </launch>

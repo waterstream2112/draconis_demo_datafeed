@@ -69,10 +69,13 @@ private:
 
     tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener* tfListener;
-    Eigen::Transform <float, 3, Eigen::Affine> l515TransformMatrix;
+    Eigen::Transform <float, 3, Eigen::Affine> transformL515ToLidar;
+    Eigen::Transform <float, 3, Eigen::Affine> transformLidarToGround;
+
     geometry_msgs::TransformStamped odomTransform;
     sensor_msgs::PointCloud2ConstPtr receivedCloud;
     nav_msgs::OdometryConstPtr currentOdom;
+    nav_msgs::OdometryConstPtr odomT265;
 
     typedef message_filters::sync_policies::ApproximateTime<nav_msgs::Odometry, sensor_msgs::PointCloud2> MySyncPolicy;
     typedef message_filters::Synchronizer<MySyncPolicy> Sync;
@@ -80,6 +83,7 @@ private:
 
     ros::Subscriber cloudSub;
     ros::Subscriber odomSub;
+    ros::Subscriber odomT265Sub;
 
     ros::Publisher cloudPub;
 
@@ -92,6 +96,7 @@ public:
         //--- Read params
         std::string topicCloudIn = readParam<std::string>(nh, "topic_cloud_in");
         std::string topicOdomIn = readParam<std::string>(nh, "topic_odom_in");
+        std::string topicOdomT265In = readParam<std::string>(nh, "topic_odom_t265_in");
         std::string topicCloudOut = readParam<std::string>(nh, "topic_cloud_out");
 
         cloudOutFrameId = readParam<std::string>(nh, "cloud_out_frame_id");
@@ -100,25 +105,27 @@ public:
 
         initTransformFrameId = readParam<std::string>(nh, "init_transform_frame_id"); 
 
-        double initFrameRotY = readParam<double>(nh, "init_frame_rot_y"); 
-        double initFrameRotZ = readParam<double>(nh, "init_frame_rot_z");
-        double initFrameTransX = readParam<double>(nh, "init_frame_trans_x");
-        double initFrameTransZ = readParam<double>(nh, "init_frame_trans_z");
-        double initFrameRotX = readParam<double>(nh, "init_frame_rot_x");
+        double initL515RotX = readParam<double>(nh, "init_l515_rot_x");
+        double initL515RotY = readParam<double>(nh, "init_l515_rot_y"); 
+        double initL515RotZ = readParam<double>(nh, "init_l515_rot_z");
+        double initL515TransX = readParam<double>(nh, "init_l515_trans_x");
+        double initL515TransY = readParam<double>(nh, "init_l515_trans_y");
+        double initL515TransZ = readParam<double>(nh, "init_l515_trans_z");
 
+        double initLidarTransZ = readParam<double>(nh, "init_lidar_trans_z");
+        
         //--- Initialize others
         prevCycleTime = ros::Time(1);
 
         tfListener = new tf2_ros::TransformListener(tfBuffer);
 
-        l515TransformMatrix = Eigen::Transform <float, 3, Eigen::Affine>::Identity() ;
-        // l515TransformMatrix.translate( Eigen::Vector3f (0.0f, 0.0f, 0.55f) ) ;
-        // l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotY / 180 , Eigen::Vector3f::UnitY () ) ) ;
-        // l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotZ / 180, Eigen::Vector3f::UnitZ () ) ) ;
-        // l515TransformMatrix.rotate( Eigen::AngleAxisf (M_PI * initFrameRotX / 180, Eigen::Vector3f::UnitX () ) ) ;
+        transformL515ToLidar = Eigen::Transform <float, 3, Eigen::Affine>::Identity() ;
+        transformL515ToLidar.rotate( Eigen::AngleAxisf (M_PI * initL515RotY / 180 , Eigen::Vector3f::UnitY () ) ) ;
+        transformL515ToLidar.rotate( Eigen::AngleAxisf (M_PI * initL515RotX / 180, Eigen::Vector3f::UnitX () ) ) ;
+        transformL515ToLidar.translate( Eigen::Vector3f (initL515TransX, initL515TransY, initL515TransZ) ) ;
 
-
-        // Eigen::Transform <float, 3, Eigen::Affine> tf_L515_Velodyne
+        transformLidarToGround = Eigen::Transform <float, 3, Eigen::Affine>::Identity() ;
+        transformLidarToGround.translate(Eigen::Vector3f(0, 0, initLidarTransZ));
 
 
         //--- Initialize synchronizer
@@ -139,11 +146,18 @@ public:
                                 this, 
                                 ros::TransportHints().tcpNoDelay());
 
-        // odomSub = nh.subscribe("/multijackal_01/odom", 
+        // odomSub = nh.subscribe(topicOdomIn, 
         //                         5, 
         //                         &DataForObstacleDetectionNode::odomCallback, 
         //                         this, 
         //                         ros::TransportHints().tcpNoDelay());
+
+
+        odomT265Sub = nh.subscribe(topicOdomT265In, 
+                                5, 
+                                &DataForObstacleDetectionNode::odomT265Callback, 
+                                this, 
+                                ros::TransportHints().tcpNoDelay());
 
         
         //--- Initialize Publishers
@@ -211,6 +225,12 @@ public:
     }
 
 
+    void odomT265Callback(const nav_msgs::OdometryConstPtr &odomPtr)
+    {
+        currentOdom = odomPtr;
+    }
+
+
     void receiveCloudCallback(const sensor_msgs::PointCloud2ConstPtr &cloudPtr)
     {
         //--- Only process if duration reach setting rate
@@ -230,6 +250,7 @@ public:
         
         
         cloudHandler(cloudPtr);
+        // cloudHandlerOdom(cloudPtr);
 
 
         //----------------
@@ -302,7 +323,7 @@ public:
         //     point[3] = 1.0f;
 
         //     Eigen::Vector4f newPoint;
-        //     newPoint = l515TransformMatrix * point;
+        //     newPoint = transformL515ToLidar * point;
 
         //     Only get points within limits
         //     if (((xMin < newPoint[0]) && (newPoint[0] < xMax)) &&
@@ -352,6 +373,40 @@ public:
     }
 
 
+    void cloudHandlerOdom(const sensor_msgs::PointCloud2ConstPtr &cloudMsg)
+    {
+        //--- Get cloud msg and convert to pcl pointcloud
+        ROS_INFO("cloudHandlerT265-1");
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloud(new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloudPclIn(new pcl::PointCloud<pcl::PointXYZ>);
+
+        pcl::fromROSMsg(*cloudMsg, *cloudPclIn);
+
+
+        //--- Down sample and Filter the pointcloud
+        ROS_INFO("cloudHandler-2");
+
+        downSample(cloudPclIn);
+        filterNoise(cloudPclIn);
+
+        //--- Transform cloud to map frame
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloudOut(new pcl::PointCloud<pcl::PointXYZ>);
+        transformL515CloudToMapFrame(currentOdom, cloudPclIn, cloudOut);
+
+        
+        //--- Publish the processed pointcloud
+        sensor_msgs::PointCloud2 rosCloudOut;
+        pcl::toROSMsg(*cloudOut, rosCloudOut);
+
+        rosCloudOut.header.frame_id = cloudOutFrameId;
+        rosCloudOut.header.stamp = cloudMsg->header.stamp;
+
+        cloudPub.publish(rosCloudOut);
+
+    }
+
+
     void downSample(pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud)
     {
         pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloud (new pcl::PointCloud<pcl::PointXYZ>);
@@ -374,6 +429,27 @@ public:
         sor.filter (*processedCloud);
 
         cloud = processedCloud;
+    }
+
+
+    void transformL515CloudToMapFrame(const nav_msgs::OdometryConstPtr &odomPtr, 
+                                      pcl::PointCloud<pcl::PointXYZ>::Ptr &l515Cloud, 
+                                      pcl::PointCloud<pcl::PointXYZ>::Ptr &mapCloud)
+    {
+        Eigen::Transform <float, 3, Eigen::Affine> T;
+
+        Eigen::Affine3f odomTransform = Eigen::Translation3f(odomPtr->pose.pose.position.x,
+                                                             odomPtr->pose.pose.position.y,
+                                                             odomPtr->pose.pose.position.z) *
+                                        Eigen::Quaternionf(odomPtr->pose.pose.orientation.w,
+                                                           odomPtr->pose.pose.orientation.x,
+                                                           odomPtr->pose.pose.orientation.y,
+                                                           odomPtr->pose.pose.orientation.z);
+
+        T = transformLidarToGround * odomTransform * transformL515ToLidar;
+
+        pcl::transformPointCloud(*l515Cloud, *mapCloud, T);
+
     }
 
 };
