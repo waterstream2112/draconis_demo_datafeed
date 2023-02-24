@@ -120,10 +120,12 @@ public:
         tfListener = new tf2_ros::TransformListener(tfBuffer);
 
         transformL515ToLidar = Eigen::Transform <float, 3, Eigen::Affine>::Identity() ;
-        transformL515ToLidar.rotate( Eigen::AngleAxisf (M_PI * initL515RotY / 180 , Eigen::Vector3f::UnitY () ) ) ;
-        transformL515ToLidar.rotate( Eigen::AngleAxisf (M_PI * initL515RotX / 180, Eigen::Vector3f::UnitX () ) ) ;
         transformL515ToLidar.translate( Eigen::Vector3f (initL515TransX, initL515TransY, initL515TransZ) ) ;
-
+        transformL515ToLidar.rotate( Eigen::AngleAxisf (M_PI * (-90) / 180, Eigen::Vector3f::UnitZ () ) ) ;
+        transformL515ToLidar.rotate( Eigen::AngleAxisf (M_PI * (-90) / 180, Eigen::Vector3f::UnitX () ) ) ;
+        transformL515ToLidar.rotate( Eigen::AngleAxisf (M_PI * initL515RotX / 180, Eigen::Vector3f::UnitX () ) ) ;
+        transformL515ToLidar.rotate( Eigen::AngleAxisf (M_PI * initL515RotZ / 180 , Eigen::Vector3f::UnitZ () ) ) ;
+        
         transformLidarToGround = Eigen::Transform <float, 3, Eigen::Affine>::Identity() ;
         transformLidarToGround.translate(Eigen::Vector3f(0, 0, initLidarTransZ));
 
@@ -249,8 +251,8 @@ public:
 
         
         
-        // cloudHandler(cloudPtr);
-        cloudHandlerOdom(cloudPtr);
+        cloudHandler(cloudPtr);
+        // cloudHandlerOdom(cloudPtr);
 
 
         //----------------
@@ -376,7 +378,7 @@ public:
     void cloudHandlerOdom(const sensor_msgs::PointCloud2ConstPtr &cloudMsg)
     {
         //--- Get cloud msg and convert to pcl pointcloud
-        ROS_INFO("cloudHandlerT265-1");
+        ROS_INFO("cloudHandlerOdom-1");
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloud(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloudPclIn(new pcl::PointCloud<pcl::PointXYZ>);
@@ -385,17 +387,20 @@ public:
 
 
         //--- Down sample and Filter the pointcloud
-        ROS_INFO("cloudHandler-2");
-
+        ROS_INFO("cloudHandlerOdom-2");
         downSample(cloudPclIn);
+
+        ROS_INFO("cloudHandlerOdom-3");
         filterNoise(cloudPclIn);
 
         //--- Transform cloud to map frame
+        ROS_INFO("cloudHandlerOdom-4");
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloudOut(new pcl::PointCloud<pcl::PointXYZ>);
         transformL515CloudToMapFrame(currentOdom, cloudPclIn, cloudOut);
 
         
         //--- Publish the processed pointcloud
+        ROS_INFO("cloudHandlerOdom-5");
         sensor_msgs::PointCloud2 rosCloudOut;
         pcl::toROSMsg(*cloudOut, rosCloudOut);
 
@@ -438,6 +443,9 @@ public:
     {
         Eigen::Transform <float, 3, Eigen::Affine> T;
 
+        ROS_INFO("transformL515CloudToMapFrame, 1");
+        if (odomPtr == NULL)
+            return;
         Eigen::Affine3f odomTransform = Eigen::Translation3f(odomPtr->pose.pose.position.x,
                                                              odomPtr->pose.pose.position.y,
                                                              odomPtr->pose.pose.position.z) *
@@ -446,7 +454,11 @@ public:
                                                            odomPtr->pose.pose.orientation.y,
                                                            odomPtr->pose.pose.orientation.z);
 
+        ROS_INFO("transformL515CloudToMapFrame, 2");
         T = transformLidarToGround * odomTransform * transformL515ToLidar;
+        // T = transformL515ToLidar;
+
+        ROS_INFO("transformL515CloudToMapFrame, 3");
 
         pcl::transformPointCloud(*l515Cloud, *mapCloud, T);
 
