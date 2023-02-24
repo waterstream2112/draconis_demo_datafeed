@@ -146,18 +146,18 @@ public:
                                 this, 
                                 ros::TransportHints().tcpNoDelay());
 
-        // odomSub = nh.subscribe(topicOdomIn, 
-        //                         5, 
-        //                         &DataForObstacleDetectionNode::odomCallback, 
-        //                         this, 
-        //                         ros::TransportHints().tcpNoDelay());
-
-
-        odomT265Sub = nh.subscribe(topicOdomT265In, 
+        odomSub = nh.subscribe(topicOdomIn, 
                                 5, 
-                                &DataForObstacleDetectionNode::odomT265Callback, 
+                                &DataForObstacleDetectionNode::odomCallback, 
                                 this, 
                                 ros::TransportHints().tcpNoDelay());
+
+
+        // odomT265Sub = nh.subscribe(topicOdomT265In, 
+        //                         5, 
+        //                         &DataForObstacleDetectionNode::odomT265Callback, 
+        //                         this, 
+        //                         ros::TransportHints().tcpNoDelay());
 
         
         //--- Initialize Publishers
@@ -208,17 +208,17 @@ public:
     void odomCallback(const nav_msgs::OdometryConstPtr &odomPtr)
     {
         
-        tf::Quaternion q(
-            odomPtr->pose.pose.orientation.x,
-            odomPtr->pose.pose.orientation.y,
-            odomPtr->pose.pose.orientation.z,
-            odomPtr->pose.pose.orientation.w);
-        tf::Matrix3x3 m(q);
-        double roll, pitch, yaw;
-        m.getRPY(roll, pitch, yaw);
+        // tf::Quaternion q(
+        //     odomPtr->pose.pose.orientation.x,
+        //     odomPtr->pose.pose.orientation.y,
+        //     odomPtr->pose.pose.orientation.z,
+        //     odomPtr->pose.pose.orientation.w);
+        // tf::Matrix3x3 m(q);
+        // double roll, pitch, yaw;
+        // m.getRPY(roll, pitch, yaw);
 
 
-        ROS_INFO("time: %0.2f, yaw: %0.2f", ros::Time::now().toSec(), yaw);
+        // ROS_INFO("time: %0.2f, yaw: %0.2f", ros::Time::now().toSec(), yaw);
 
         currentOdom = odomPtr;
 
@@ -249,8 +249,8 @@ public:
 
         
         
-        cloudHandler(cloudPtr);
-        // cloudHandlerOdom(cloudPtr);
+        // cloudHandler(cloudPtr);
+        cloudHandlerOdom(cloudPtr);
 
 
         //----------------
