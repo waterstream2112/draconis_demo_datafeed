@@ -61,11 +61,13 @@ private:
     ros::NodeHandle nh;
 
     ros::Duration samplingPeriod;
+    ros::Time prevCycleTime;
+
+    std::string mapFrameId;
     std::string cloudOutFrameId;
     std::string initTransformFrameId;
-    double leafSizeDownSample;
 
-    ros::Time prevCycleTime;
+    double leafSizeDownSample;
 
     tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener* tfListener;
@@ -99,11 +101,12 @@ public:
         std::string topicOdomT265In = readParam<std::string>(nh, "topic_odom_t265_in");
         std::string topicCloudOut = readParam<std::string>(nh, "topic_cloud_out");
 
+        mapFrameId = readParam<std::string>(nh, "map_frame_id");
         cloudOutFrameId = readParam<std::string>(nh, "cloud_out_frame_id");
+        initTransformFrameId = readParam<std::string>(nh, "init_transform_frame_id"); 
+
         samplingPeriod = ros::Duration(1.0 / readParam<double>(nh, "sampling_rate")); 
         leafSizeDownSample = readParam<double>(nh, "leaf_size_down_sample");
-
-        initTransformFrameId = readParam<std::string>(nh, "init_transform_frame_id"); 
 
         double initL515RotX = readParam<double>(nh, "init_l515_rot_x");
         double initL515RotY = readParam<double>(nh, "init_l515_rot_y"); 
@@ -120,7 +123,7 @@ public:
         tfListener = new tf2_ros::TransformListener(tfBuffer);
 
         transformL515ToLidar = Eigen::Transform <float, 3, Eigen::Affine>::Identity() ;
-        transformL515ToLidar.translate(Eigen::Vector3f(0, 0, initLidarTransZ));
+        // transformL515ToLidar.translate(Eigen::Vector3f(0, 0, initLidarTransZ));
         transformL515ToLidar.translate( Eigen::Vector3f (initL515TransX, initL515TransY, initL515TransZ) ) ;
         transformL515ToLidar.rotate( Eigen::AngleAxisf (M_PI * (-90) / 180, Eigen::Vector3f::UnitZ () ) ) ;
         transformL515ToLidar.rotate( Eigen::AngleAxisf (M_PI * (-90) / 180, Eigen::Vector3f::UnitX () ) ) ;
@@ -458,9 +461,9 @@ public:
                                                            odomPtr->pose.pose.orientation.z);
 
         ROS_INFO("transformL515CloudToMapFrame, 2");
-        // T = transformLidarToGround * odomTransform * transformL515ToLidar;
+        T = transformLidarToGround * odomTransform * transformL515ToLidar;
         // T = transformL515ToLidar;
-        T = odomTransform * transformL515ToLidar;
+        // T = odomTransform * transformL515ToLidar;
 
         ROS_INFO("transformL515CloudToMapFrame, 3");
 

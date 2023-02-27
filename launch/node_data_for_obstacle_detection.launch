@@ -7,11 +7,13 @@
         <param name="topic_odom_t265_in" value="/$(env ROBOT_NAMESPACE)/t265/odom/sample" type="str" />
         <param name="topic_cloud_out" value="/$(env ROBOT_NAMESPACE)/l515_cloud" type="str" /> 
 
+        <param name="map_frame_id" value="$(env ROBOT_NAMESPACE)/map" type="str" />
         <param name="cloud_out_frame_id" value="$(env ROBOT_NAMESPACE)/map" type="str" />
+        <param name="init_transform_frame_id" value="$(env ROBOT_NAMESPACE)/l515_link" type="str"/>
+        
         <param name="sampling_rate" value="4" type="double"/>
         <param name="leaf_size_down_sample" value="0.015" type="double"/>
 
-        <param name="init_transform_frame_id" value="$(env ROBOT_NAMESPACE)/l515_link" type="str"/>
         <param name="init_l515_rot_x" value="-14" type="double"/>
         <param name="init_l515_rot_y" value="-2.5" type="double"/>
         <param name="init_l515_rot_z" value="0" type="double"/>
@@ -21,6 +23,5 @@
 
         <param name="init_lidar_trans_z" value="0.81" type="double"/>
         
-
     </node>
 </launch>
