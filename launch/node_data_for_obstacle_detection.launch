@@ -13,9 +13,9 @@
 
         <param name="init_transform_frame_id" value="$(env ROBOT_NAMESPACE)/l515_link" type="str"/>
         <param name="init_l515_rot_x" value="-14" type="double"/>
-        <param name="init_l515_rot_y" value="0" type="double"/>
+        <param name="init_l515_rot_y" value="-2.5" type="double"/>
         <param name="init_l515_rot_z" value="0" type="double"/>
-        <param name="init_l515_trans_x" value="0.45" type="double"/>
+        <param name="init_l515_trans_x" value="0.5" type="double"/>
         <param name="init_l515_trans_y" value="0.0" type="double"/>
         <param name="init_l515_trans_z" value="-0.25" type="double"/>
 
