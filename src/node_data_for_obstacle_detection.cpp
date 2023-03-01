@@ -435,8 +435,8 @@ public:
         pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloud (new pcl::PointCloud<pcl::PointXYZ>);
         pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
         sor.setInputCloud (cloud);
-        sor.setMeanK (50);
-        sor.setStddevMulThresh (1.0);
+        sor.setMeanK (100);
+        sor.setStddevMulThresh (0.5);
         sor.filter (*processedCloud);
 
         cloud = processedCloud;
