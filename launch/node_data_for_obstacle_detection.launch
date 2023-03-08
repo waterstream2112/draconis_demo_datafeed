@@ -23,7 +23,7 @@
 
         <param name="init_lidar_trans_z" value="0.81" type="double"/>
 
-        <param name="adjust_z_height" value="0.04" type="double"/>
+        <param name="adjust_z_height" value="0.035" type="double"/>
         
     </node>
 </launch>

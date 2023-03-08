@@ -372,9 +372,9 @@ public:
         pcl::transformPointCloud(*transformedCloudOut, *processedCloudOut, matrix);
 
 
-        for (size_t i = 0; i < transformedCloudOut->size(); i++)
+        for (size_t i = 0; i < processedCloudOut->size(); i++)
         {
-            transformedCloudOut->at(i).z += adjustZHeight;
+            processedCloudOut->at(i).z += adjustZHeight;
         }
 
         
