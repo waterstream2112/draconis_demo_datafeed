@@ -69,6 +69,8 @@ private:
 
     double leafSizeDownSample;
 
+    double adjustZHeight = 0;
+
     tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener* tfListener;
     Eigen::Transform <float, 3, Eigen::Affine> transformL515ToLidar;
@@ -116,6 +118,8 @@ public:
         double initL515TransZ = readParam<double>(nh, "init_l515_trans_z");
 
         double initLidarTransZ = readParam<double>(nh, "init_lidar_trans_z");
+
+        adjustZHeight = readParam<double>(nh, "adjust_z_height"); 
         
         //--- Initialize others
         prevCycleTime = ros::Time(1);
@@ -366,6 +370,12 @@ public:
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::transformPointCloud(*transformedCloudOut, *processedCloudOut, matrix);
+
+
+        for (size_t i = 0; i < transformedCloudOut->size(); i++)
+        {
+            transformedCloudOut->at(i).z += adjustZHeight;
+        }
 
         
         //--- Publish the processed pointcloud

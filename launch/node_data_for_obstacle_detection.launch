@@ -22,6 +22,8 @@
         <param name="init_l515_trans_z" value="-0.25" type="double"/>
 
         <param name="init_lidar_trans_z" value="0.81" type="double"/>
+
+        <param name="adjust_z_height" value="0.04" type="double"/>
         
     </node>
 </launch>
