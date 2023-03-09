@@ -70,11 +70,14 @@ private:
     double leafSizeDownSample;
 
     double adjustZHeight = 0;
+    double adjustRotX = 0;
+    double adjustRotY = 0;
 
     tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener* tfListener;
     Eigen::Transform <float, 3, Eigen::Affine> transformL515ToLidar;
     Eigen::Transform <float, 3, Eigen::Affine> transformLidarToGround;
+    Eigen::Transform <float, 3, Eigen::Affine> transformFinalAdjustL515;
 
     geometry_msgs::TransformStamped odomTransform;
     sensor_msgs::PointCloud2ConstPtr receivedCloud;
@@ -120,6 +123,8 @@ public:
         double initLidarTransZ = readParam<double>(nh, "init_lidar_trans_z");
 
         adjustZHeight = readParam<double>(nh, "adjust_z_height"); 
+        adjustRotX = readParam<double>(nh, "adjust_l515_rot_x"); 
+        adjustRotY = readParam<double>(nh, "adjust_l515_rot_y"); 
         
         //--- Initialize others
         prevCycleTime = ros::Time(1);
@@ -135,9 +140,13 @@ public:
         transformL515ToLidar.rotate( Eigen::AngleAxisf (M_PI * initL515RotY / 180, Eigen::Vector3f::UnitY () ) ) ;
         transformL515ToLidar.rotate( Eigen::AngleAxisf (M_PI * initL515RotZ / 180 , Eigen::Vector3f::UnitZ () ) ) ;
         
-        
         transformLidarToGround = Eigen::Transform <float, 3, Eigen::Affine>::Identity() ;
         transformLidarToGround.translate(Eigen::Vector3f(0, 0, initLidarTransZ));
+
+        transformFinalAdjustL515 = Eigen::Transform <float, 3, Eigen::Affine>::Identity() ;
+        transformFinalAdjustL515.translate( Eigen::Vector3f (0, 0, adjustZHeight) ) ;
+        transformFinalAdjustL515.rotate( Eigen::AngleAxisf (M_PI * (adjustRotX) / 180, Eigen::Vector3f::UnitX () ) ) ;
+        transformFinalAdjustL515.rotate( Eigen::AngleAxisf (M_PI * (adjustRotY) / 180, Eigen::Vector3f::UnitY () ) ) ;
 
 
         //--- Initialize synchronizer
@@ -264,38 +273,6 @@ public:
         cloudHandler(cloudPtr);
         // cloudHandlerOdom(cloudPtr);
 
-
-        //----------------
-        // if (currentOdom == NULL)
-        //     return;
-
-        // receivedCloud = cloudPtr;
-
-        // pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
-        // pcl::PointCloud<pcl::PointXYZ>::Ptr cloudIn(new pcl::PointCloud<pcl::PointXYZ>);
-
-        // pcl::fromROSMsg(*receivedCloud, *cloudIn);
-
-        // downSample(cloudIn);
-        // filterNoise(cloudIn);
-
-        // odomTransform.transform.translation.x = currentOdom->pose.pose.position.x;
-        // odomTransform.transform.translation.y = currentOdom->pose.pose.position.y;
-        // odomTransform.transform.translation.z = currentOdom->pose.pose.position.z;
-        // odomTransform.transform.rotation = currentOdom->pose.pose.orientation;
-
-        // Eigen::Matrix4d matrix = tf2::transformToEigen(odomTransform).matrix();
-
-        // pcl::transformPointCloud(*cloudIn, *processedCloudOut, matrix);
-
-        // sensor_msgs::PointCloud2 cloudOut;
-        // pcl::toROSMsg(*processedCloudOut, cloudOut);
-
-        // cloudOut.header.frame_id = cloudOutFrameId;
-        // cloudOut.header.stamp = receivedCloud->header.stamp;
-
-        // cloudPub.publish(cloudOut);
-
     }
 
 
@@ -366,16 +343,24 @@ public:
 
         ROS_INFO("cloudHandler-4");
 
-        Eigen::Matrix4d matrix = tf2::transformToEigen(transform).matrix();
+        Eigen::Translation3f trans = Eigen::Translation3f(transform.transform.translation.x, 
+                                                          transform.transform.translation.y, 
+                                                          transform.transform.translation.z);
+        Eigen::Quaternionf quat = Eigen::Quaternionf(transform.transform.rotation.w, 
+                                                     transform.transform.rotation.x,
+                                                     transform.transform.rotation.y,
+                                                     transform.transform.rotation.z);
+        Eigen::Transform <float, 3, Eigen::Affine> T = trans * quat * transformFinalAdjustL515 ;
+        // Eigen::Matrix4d matrix = T.matrix();
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
-        pcl::transformPointCloud(*transformedCloudOut, *processedCloudOut, matrix);
+        pcl::transformPointCloud(*transformedCloudOut, *processedCloudOut, T);
 
 
-        for (size_t i = 0; i < processedCloudOut->size(); i++)
-        {
-            processedCloudOut->at(i).z += adjustZHeight;
-        }
+        // for (size_t i = 0; i < processedCloudOut->size(); i++)
+        // {
+        //     processedCloudOut->at(i).z += adjustZHeight;
+        // }
 
         
         //--- Publish the processed pointcloud
