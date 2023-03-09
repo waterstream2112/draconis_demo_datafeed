@@ -69,7 +69,7 @@ private:
 
     double leafSizeDownSample;
 
-    double adjustZHeight = 0;
+    double adjustTransZ = 0;
     double adjustRotX = 0;
     double adjustRotY = 0;
 
@@ -122,7 +122,7 @@ public:
 
         double initLidarTransZ = readParam<double>(nh, "init_lidar_trans_z");
 
-        adjustZHeight = readParam<double>(nh, "adjust_z_height"); 
+        adjustTransZ = readParam<double>(nh, "adjust_l515_trans_z"); 
         adjustRotX = readParam<double>(nh, "adjust_l515_rot_x"); 
         adjustRotY = readParam<double>(nh, "adjust_l515_rot_y"); 
         
@@ -144,7 +144,7 @@ public:
         transformLidarToGround.translate(Eigen::Vector3f(0, 0, initLidarTransZ));
 
         transformFinalAdjustL515 = Eigen::Transform <float, 3, Eigen::Affine>::Identity() ;
-        transformFinalAdjustL515.translate( Eigen::Vector3f (0, 0, adjustZHeight) ) ;
+        transformFinalAdjustL515.translate( Eigen::Vector3f (0, 0, adjustTransZ) ) ;
         transformFinalAdjustL515.rotate( Eigen::AngleAxisf (M_PI * (adjustRotX) / 180, Eigen::Vector3f::UnitX () ) ) ;
         transformFinalAdjustL515.rotate( Eigen::AngleAxisf (M_PI * (adjustRotY) / 180, Eigen::Vector3f::UnitY () ) ) ;
 
