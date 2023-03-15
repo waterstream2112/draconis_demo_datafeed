@@ -64,6 +64,7 @@ private:
     ros::Time prevCycleTime;
 
     std::string mapFrameId;
+    std::string baseLinkFrameId;
     std::string cloudOutFrameId;
     std::string initTransformFrameId;
 
@@ -107,6 +108,7 @@ public:
         std::string topicCloudOut = readParam<std::string>(nh, "topic_cloud_out");
 
         mapFrameId = readParam<std::string>(nh, "map_frame_id");
+        baseLinkFrameId = readParam<std::string>(nh, "base_link_frame_id");
         cloudOutFrameId = readParam<std::string>(nh, "cloud_out_frame_id");
         initTransformFrameId = readParam<std::string>(nh, "init_transform_frame_id"); 
 
@@ -331,8 +333,8 @@ public:
         geometry_msgs::TransformStamped transform;
         try {
             
-            transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, ros::Time(0));
-            // transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, cloudMsg->header.stamp);
+            // transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, ros::Time(0));
+            transform = tfBuffer.lookupTransform(cloudOutFrameId, baseLinkFrameId, ros::Time(0));
             ROS_INFO("target frame %s", cloudOutFrameId.c_str());
             ROS_INFO("source frame %s", cloudMsg->header.frame_id.c_str());
             ROS_INFO("transform stamp %0.5f", transform.header.stamp.toSec());
@@ -350,7 +352,7 @@ public:
                                                      transform.transform.rotation.x,
                                                      transform.transform.rotation.y,
                                                      transform.transform.rotation.z);
-        Eigen::Transform <float, 3, Eigen::Affine> T = trans * quat * transformFinalAdjustL515 ;
+        Eigen::Transform <float, 3, Eigen::Affine> T = trans * quat * transformL515ToLidar ;
         // Eigen::Matrix4d matrix = T.matrix();
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
