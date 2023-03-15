@@ -264,14 +264,6 @@ public:
         downSample(cloudPclIn);
         filterNoise(cloudPclIn);
 
-
-        //--- Do some more transform before go through tf transform
-        pcl::PointCloud<pcl::PointXYZ>::Ptr transformedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
-
-        transformedCloudOut = cloudPclIn;
-
-        ROS_INFO("cloudHandler: Time0=%0.2f, cloudMsg=%0.5f", ros::Time::now().toSec(), cloudMsg->header.stamp.toSec());
-
         //--- Do tf transform
         geometry_msgs::TransformStamped transform;
         try {
@@ -300,7 +292,7 @@ public:
         
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
-        pcl::transformPointCloud(*transformedCloudOut, *processedCloudOut, T);
+        pcl::transformPointCloud(*cloudPclIn, *processedCloudOut, T);
 
         
         //--- Publish the processed pointcloud
