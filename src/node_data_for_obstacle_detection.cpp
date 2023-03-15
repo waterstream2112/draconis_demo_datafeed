@@ -208,19 +208,7 @@ public:
 
     void syncCallback(const nav_msgs::OdometryConstPtr &odomPtr, const sensor_msgs::PointCloud2ConstPtr &cloudPtr)
     {
-        //--- Only process if duration reach setting rate
-        // ros::Duration period = ros::Time::now() - prevCycleTime;
-
-        // if (period < samplingPeriod)
-        // {
-        //     return;
-        // }
-        
-        // ROS_INFO("syncCallback, period=%0.3f", period.toSec());
-        // prevCycleTime = ros::Time::now();
-
         ROS_INFO("syncCallback, odom stamp=%0.2f, cloud stamp=%0.2f", odomPtr->header.stamp, cloudPtr->header.stamp);
-
 
         //--- process pointcloud
         cloudHandler(cloudPtr);
@@ -230,21 +218,7 @@ public:
 
     void odomCallback(const nav_msgs::OdometryConstPtr &odomPtr)
     {
-        
-        // tf::Quaternion q(
-        //     odomPtr->pose.pose.orientation.x,
-        //     odomPtr->pose.pose.orientation.y,
-        //     odomPtr->pose.pose.orientation.z,
-        //     odomPtr->pose.pose.orientation.w);
-        // tf::Matrix3x3 m(q);
-        // double roll, pitch, yaw;
-        // m.getRPY(roll, pitch, yaw);
-
-
-        // ROS_INFO("time: %0.2f, yaw: %0.2f", ros::Time::now().toSec(), yaw);
-
         currentOdom = odomPtr;
-
     }
 
 
@@ -270,8 +244,6 @@ public:
 
         ROS_INFO("receiveCloudCallback, cloud frame: %s", cloudPtr->header.frame_id.c_str());
 
-        
-        
         cloudHandler(cloudPtr);
         // cloudHandlerOdom(cloudPtr);
 
@@ -282,8 +254,6 @@ public:
     {
         
         //--- Get cloud msg and convert to pcl pointcloud
-        ROS_INFO("cloudHandler-1");
-
         pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloud(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloudPclIn(new pcl::PointCloud<pcl::PointXYZ>);
 
@@ -291,39 +261,12 @@ public:
 
 
         //--- Down sample and Filter the pointcloud
-        ROS_INFO("cloudHandler-2");
-
         downSample(cloudPclIn);
         filterNoise(cloudPclIn);
 
 
         //--- Do some more transform before go through tf transform
-        ROS_INFO("cloudHandler-3");
-
         pcl::PointCloud<pcl::PointXYZ>::Ptr transformedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
-        // double xMin=0, xMax=4;
-        // double yMin=-2.5, yMax=2.5;
-        // double zMin=0.0, zMax=0.5;
-        
-        // for (size_t i = 0; i < cloudPclIn->points.size(); i++)
-        // {
-        //     Eigen::Vector4f point;
-        //     point[0] = cloudPclIn->points[i].x;
-        //     point[1] = cloudPclIn->points[i].y;
-        //     point[2] = cloudPclIn->points[i].z;
-        //     point[3] = 1.0f;
-
-        //     Eigen::Vector4f newPoint;
-        //     newPoint = transformL515ToLidar * point;
-
-        //     Only get points within limits
-        //     if (((xMin < newPoint[0]) && (newPoint[0] < xMax)) &&
-        //         ((yMin < newPoint[1]) && (newPoint[1] < yMax)) &&
-        //         ((zMin < newPoint[2]) && (newPoint[2] < zMax)))
-        //     {
-        //         transformedCloudOut->push_back(pcl::PointXYZ(newPoint[0], newPoint[1], newPoint[2]));
-        //     }
-        // }
 
         transformedCloudOut = cloudPclIn;
 
@@ -343,31 +286,24 @@ public:
             return;
         }
 
-        ROS_INFO("cloudHandler-4");
-
+        //--- Transform from base_link to L515
         Eigen::Translation3f trans = Eigen::Translation3f(transform.transform.translation.x, 
                                                           transform.transform.translation.y, 
                                                           transform.transform.translation.z);
+
         Eigen::Quaternionf quat = Eigen::Quaternionf(transform.transform.rotation.w, 
                                                      transform.transform.rotation.x,
                                                      transform.transform.rotation.y,
                                                      transform.transform.rotation.z);
+
         Eigen::Transform <float, 3, Eigen::Affine> T = trans * quat * transformL515ToLidar ;
-        // Eigen::Matrix4d matrix = T.matrix();
+        
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr processedCloudOut(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::transformPointCloud(*transformedCloudOut, *processedCloudOut, T);
 
-
-        // for (size_t i = 0; i < processedCloudOut->size(); i++)
-        // {
-        //     processedCloudOut->at(i).z += adjustZHeight;
-        // }
-
         
         //--- Publish the processed pointcloud
-        ROS_INFO("cloudHandler-5");
-
         sensor_msgs::PointCloud2 cloudOut;
         pcl::toROSMsg(*processedCloudOut, cloudOut);
 
@@ -459,8 +395,6 @@ public:
 
         ROS_INFO("transformL515CloudToMapFrame, 2");
         T = transformLidarToGround * odomTransform * transformL515ToLidar;
-        // T = transformL515ToLidar;
-        // T = odomTransform * transformL515ToLidar;
 
         ROS_INFO("transformL515CloudToMapFrame, 3");
 
