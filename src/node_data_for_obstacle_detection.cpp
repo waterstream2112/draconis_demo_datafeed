@@ -166,11 +166,11 @@ public:
 
 
         //--- Initialize Subscribers
-        velodyneSub = nh.subscribe(topicVelodyneIn, 
-                                5, 
-                                &DataForObstacleDetectionNode::receiveVelodyneCallback, 
-                                this, 
-                                ros::TransportHints().tcpNoDelay());
+        // velodyneSub = nh.subscribe(topicVelodyneIn, 
+        //                         5, 
+        //                         &DataForObstacleDetectionNode::receiveVelodyneCallback, 
+        //                         this, 
+        //                         ros::TransportHints().tcpNoDelay());
 
         cloudSub = nh.subscribe(topicCloudIn, 
                                 5, 
@@ -178,11 +178,11 @@ public:
                                 this, 
                                 ros::TransportHints().tcpNoDelay());
 
-        // odomSub = nh.subscribe(topicOdomIn, 
-        //                         5, 
-        //                         &DataForObstacleDetectionNode::odomCallback, 
-        //                         this, 
-        //                         ros::TransportHints().tcpNoDelay());
+        odomSub = nh.subscribe(topicOdomIn, 
+                                5, 
+                                &DataForObstacleDetectionNode::odomCallback, 
+                                this, 
+                                ros::TransportHints().tcpNoDelay());
 
 
         // odomT265Sub = nh.subscribe(topicOdomT265In, 
@@ -227,7 +227,10 @@ public:
 
     void odomCallback(const nav_msgs::OdometryConstPtr &odomPtr)
     {
+        ROS_INFO("Receive odom");
+
         currentOdom = odomPtr;
+        velodyneFlag = true;
     }
 
 
@@ -239,7 +242,9 @@ public:
 
     void receiveVelodyneCallback(const sensor_msgs::PointCloud2ConstPtr &cloudPtr)
     {
-        velodyneFlag = true;
+        ROS_INFO("Receive velodyne");
+
+        // velodyneFlag = true;
     }
 
 
