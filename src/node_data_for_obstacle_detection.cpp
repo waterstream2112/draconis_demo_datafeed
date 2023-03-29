@@ -62,6 +62,7 @@ private:
 
     ros::Duration samplingPeriod;
     ros::Time prevCycleTime;
+    bool velodyneFlag = false;
 
     std::string mapFrameId;
     std::string baseLinkFrameId;
@@ -89,6 +90,7 @@ private:
     typedef message_filters::Synchronizer<MySyncPolicy> Sync;
     boost::shared_ptr<Sync> sync;
 
+    ros::Subscriber velodyneSub;
     ros::Subscriber cloudSub;
     ros::Subscriber odomSub;
     ros::Subscriber odomT265Sub;
@@ -102,6 +104,7 @@ public:
         nh = n;
 
         //--- Read params
+        std::string topicVelodyneIn = readParam<std::string>(nh, "topic_velodyne_in");
         std::string topicCloudIn = readParam<std::string>(nh, "topic_cloud_in");
         std::string topicOdomIn = readParam<std::string>(nh, "topic_odom_in");
         std::string topicOdomT265In = readParam<std::string>(nh, "topic_odom_t265_in");
@@ -163,17 +166,23 @@ public:
 
 
         //--- Initialize Subscribers
+        velodyneSub = nh.subscribe(topicVelodyneIn, 
+                                5, 
+                                &DataForObstacleDetectionNode::receiveVelodyneCallback, 
+                                this, 
+                                ros::TransportHints().tcpNoDelay());
+
         cloudSub = nh.subscribe(topicCloudIn, 
                                 5, 
                                 &DataForObstacleDetectionNode::receiveCloudCallback, 
                                 this, 
                                 ros::TransportHints().tcpNoDelay());
 
-        odomSub = nh.subscribe(topicOdomIn, 
-                                5, 
-                                &DataForObstacleDetectionNode::odomCallback, 
-                                this, 
-                                ros::TransportHints().tcpNoDelay());
+        // odomSub = nh.subscribe(topicOdomIn, 
+        //                         5, 
+        //                         &DataForObstacleDetectionNode::odomCallback, 
+        //                         this, 
+        //                         ros::TransportHints().tcpNoDelay());
 
 
         // odomT265Sub = nh.subscribe(topicOdomT265In, 
@@ -228,17 +237,27 @@ public:
     }
 
 
+    void receiveVelodyneCallback(const sensor_msgs::PointCloud2ConstPtr &cloudPtr)
+    {
+        velodyneFlag = true;
+    }
+
+
     void receiveCloudCallback(const sensor_msgs::PointCloud2ConstPtr &cloudPtr)
     {
         //--- Only process if duration reach setting rate
-        ros::Duration period = ros::Time::now() - prevCycleTime;
+        // ros::Duration period = ros::Time::now() - prevCycleTime;
 
-        if (period < samplingPeriod)
+        // if (period < samplingPeriod)
+        // {
+        //     return;
+        // }
+
+        //--- Sync with receiving velodyne
+        if (velodyneFlag != true)
         {
             return;
         }
-        
-        ROS_INFO("receiveCloudCallback, period=%0.3f", period.toSec());
 
         prevCycleTime = ros::Time::now();
 
@@ -246,6 +265,8 @@ public:
 
         cloudHandler(cloudPtr);
         // cloudHandlerOdom(cloudPtr);
+
+        velodyneFlag = false;
 
     }
 
