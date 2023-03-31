@@ -265,12 +265,12 @@ public:
             return;
         }
 
-        // skipFrameCount++;
+        skipFrameCount++;
 
-        // if (skipFrameCount < 3)
-        //     return;
-        // else
-        //     skipFrameCount = 0;
+        if (skipFrameCount < 4)
+            return;
+        else
+            skipFrameCount = 0;
 
         prevCycleTime = ros::Time::now();
 
@@ -301,8 +301,8 @@ public:
         //--- Do tf transform
         geometry_msgs::TransformStamped transform;
         try {
-            transform = tfBuffer.lookupTransform(cloudOutFrameId, baseLinkFrameId, ros::Time(0));
-            // transform = tfBuffer.lookupTransform(cloudOutFrameId, baseLinkFrameId, cloudMsg->header.stamp);
+            // transform = tfBuffer.lookupTransform(cloudOutFrameId, baseLinkFrameId, ros::Time(0));
+            transform = tfBuffer.lookupTransform(cloudOutFrameId, baseLinkFrameId, cloudMsg->header.stamp);
             ROS_INFO("target frame %s", cloudOutFrameId.c_str());
             ROS_INFO("source frame %s", cloudMsg->header.frame_id.c_str());
             ROS_INFO("transform stamp %0.5f", transform.header.stamp.toSec());
