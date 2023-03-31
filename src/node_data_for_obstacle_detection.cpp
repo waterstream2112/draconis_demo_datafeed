@@ -63,6 +63,7 @@ private:
     ros::Duration samplingPeriod;
     ros::Time prevCycleTime;
     bool velodyneFlag = false;
+    int skipFrameCount = 0;
 
     std::string mapFrameId;
     std::string baseLinkFrameId;
@@ -173,7 +174,7 @@ public:
         //                         ros::TransportHints().tcpNoDelay());
 
         cloudSub = nh.subscribe(topicCloudIn, 
-                                5, 
+                                10, 
                                 &DataForObstacleDetectionNode::receiveCloudCallback, 
                                 this, 
                                 ros::TransportHints().tcpNoDelay());
@@ -264,6 +265,13 @@ public:
             return;
         }
 
+        // skipFrameCount++;
+
+        // if (skipFrameCount < 3)
+        //     return;
+        // else
+        //     skipFrameCount = 0;
+
         prevCycleTime = ros::Time::now();
 
         ROS_INFO("receiveCloudCallback, cloud frame: %s", cloudPtr->header.frame_id.c_str());
@@ -293,9 +301,8 @@ public:
         //--- Do tf transform
         geometry_msgs::TransformStamped transform;
         try {
-            
-            // transform = tfBuffer.lookupTransform(cloudOutFrameId, cloudMsg->header.frame_id, ros::Time(0));
             transform = tfBuffer.lookupTransform(cloudOutFrameId, baseLinkFrameId, ros::Time(0));
+            // transform = tfBuffer.lookupTransform(cloudOutFrameId, baseLinkFrameId, cloudMsg->header.stamp);
             ROS_INFO("target frame %s", cloudOutFrameId.c_str());
             ROS_INFO("source frame %s", cloudMsg->header.frame_id.c_str());
             ROS_INFO("transform stamp %0.5f", transform.header.stamp.toSec());
