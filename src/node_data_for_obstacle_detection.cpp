@@ -267,7 +267,7 @@ public:
 
         skipFrameCount++;
 
-        if (skipFrameCount < 4)
+        if (skipFrameCount < 3)
             return;
         else
             skipFrameCount = 0;
