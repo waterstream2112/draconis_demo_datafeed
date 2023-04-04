@@ -394,7 +394,7 @@ public:
         pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
         sor.setInputCloud (cloud);
         sor.setMeanK (100);
-        sor.setStddevMulThresh (0.5);
+        sor.setStddevMulThresh (0.9);
         sor.filter (*processedCloud);
 
         cloud = processedCloud;
