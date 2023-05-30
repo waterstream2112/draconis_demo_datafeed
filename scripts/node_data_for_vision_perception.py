@@ -37,6 +37,7 @@ class NodeDataForVisionPerception():
         self.__tfBuffer = tf2_ros.Buffer()
         self.__listener = tf2_ros.TransformListener(self.__tfBuffer)
 
+        #--- Subscribers
         # self.__imageFilter = message_filters.Subscriber(self.__modifiedImageOutputTopic, Image)
         self.__imageFilter = message_filters.Subscriber(self.__cameraTopic, Image)
         self.__cloudFilter = message_filters.Subscriber(self.__lidarTopic, PointCloud2)
@@ -48,6 +49,7 @@ class NodeDataForVisionPerception():
         self.__imageSub = rospy.Subscriber(self.__cameraTopic, Image, self.__image_callback, queue_size=5, tcp_nodelay=True)
         self.__cloudSub = rospy.Subscriber(self.__lidarTopic, PointCloud2, self.__cloud_callback, queue_size=5, tcp_nodelay=True)
 
+        #--- Publishers
         self.__imageCloudPub = rospy.Publisher(self.__imageCloudOutputTopic, ImagePointcloudMsg, queue_size=5, tcp_nodelay=True)
         self.__modifiedImagePub = rospy.Publisher(self.__modifiedImageOutputTopic, Image, queue_size=5, tcp_nodelay=True)
 
@@ -76,6 +78,7 @@ class NodeDataForVisionPerception():
         self.__imageCloudPackage.image = image
         self.__imageCloudPackage.pointcloud = cloud
         self.__imageCloudPackage.transform_stamped = self.__trans
+        self.__imageCloudPackage.header = cloud.header
 
         rospy.loginfo("Publish imageCloudPackage")
         self.__imageCloudPub.publish(self.__imageCloudPackage)
