@@ -1,7 +1,8 @@
 <launch>
     <node name="node_data_for_vision_perception" pkg="draconis_demo_datafeed" type="node_data_for_vision_perception.py" output="screen">
-        <!-- <param name="camera_input_topic" value="/argus/ar0234_front_right/image_raw" /> -->
-        <param name="camera_input_topic" value="/$(env ROBOT_NAMESPACE)/d435i_2/color/image_raw" />
+        <param name="camera_input_topic" value="/argus/ar0234_front_right/image_raw" />
+        <!-- <param name="camera_input_topic" value="/$(env ROBOT_NAMESPACE)/d435i_2/color/image_raw" /> -->
+
         <!-- <param name="lidar_input_topic" value="/$(env ROBOT_NAMESPACE)/modified_velodyne_points" /> -->
         <param name="lidar_input_topic" value="/$(env ROBOT_NAMESPACE)/velodyne_points" />
 
@@ -9,6 +10,6 @@
         <param name="image_cloud_output_topic" value="/$(env ROBOT_NAMESPACE)/image_and_cloud" />
 
         <param name="output_framerate" value="4" type="double"/>
-        <param name="image_cloud_package_frame_id" value="$(env ROBOT_NAMESPACE)/map" type="str" />
+        <param name="image_cloud_package_frame_id" value="$(env ROBOT_NAMESPACE)/base_link" type="str" />
     </node>
 </launch>
