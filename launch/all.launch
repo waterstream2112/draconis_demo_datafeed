@@ -1,14 +1,13 @@
 <launch>
-    <param name="/use_sim_time" value="false" />
-
+    
     <group ns="$(env ROBOT_NAMESPACE)">
     
-        <include file="$(dirname)/node_data_for_vision_perception.launch" />
+        <include file="$(find draconis_demo_datafeed)/launch/node_data_for_vision_perception.launch" />
 
-        <include file="$(dirname)/node_data_for_obstacle_detection.launch" />
+        <include file="$(find draconis_demo_datafeed)/launch/node_data_for_obstacle_detection.launch" />
+
+        <include file="$(find draconis_demo_datafeed)/launch/node_relay_dog_topics.launch" />
 
     </group>
-
-    <!-- <node name="l515_broadcaster" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 map $(env DOG_NAME)/l515 100" /> -->
 
 </launch>
