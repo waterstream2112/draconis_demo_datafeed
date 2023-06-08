@@ -4,6 +4,7 @@ import rospy
 import message_filters
 import tf2_ros
 
+from std_msgs.msg import UInt8MultiArray
 from sensor_msgs.msg import Image, PointCloud2
 from geometry_msgs.msg import TransformStamped
 
@@ -17,31 +18,31 @@ class NodeRelayDogTopics():
         rospy.loginfo("<< node::__init__ >>")
 
         #--- Read params
-        self.__topicInputs = [rospy.get_param("~topic_input_ar0234_front_right"), \
-                             rospy.get_param("~topic_input_ar0234_side_left"), \
-                             rospy.get_param("~topic_input_ar0234_side_right"), \
-                             rospy.get_param("~topic_input_state_heartbeat")]
+        self.__topicInputs = [rospy.get_param("~topic_input_state_heartbeat", ""), \
+                              rospy.get_param("~topic_input_ar0234_front_right", ""), \
+                              rospy.get_param("~topic_input_ar0234_side_left", ""), \
+                              rospy.get_param("~topic_input_ar0234_side_right", "")]
 
-        self.__topicOutputs = [rospy.get_param("~topic_output_ar0234_front_right"), \
-                              rospy.get_param("~topic_output_ar0234_side_left"), \
-                              rospy.get_param("~topic_output_ar0234_side_right"), \
-                              rospy.get_param("~topic_output_state_heartbeat")]
+        self.__topicOutputs = [rospy.get_param("~topic_output_state_heartbeat", ""), \
+                              rospy.get_param("~topic_output_ar0234_front_right", ""), \
+                              rospy.get_param("~topic_output_ar0234_side_left", ""), \
+                              rospy.get_param("~topic_output_ar0234_side_right", "")]
 
         #--- Subscribers
-        self.__subscribers = [rospy.Subscriber(self.__topicInputs[0], Image, self.__callback_0, queue_size=5, tcp_nodelay=True), \
+        self.__subscribers = [rospy.Subscriber(self.__topicInputs[0], UInt8MultiArray, self.__callback_0, queue_size=5, tcp_nodelay=True), \
                               rospy.Subscriber(self.__topicInputs[1], Image, self.__callback_1, queue_size=5, tcp_nodelay=True), \
                               rospy.Subscriber(self.__topicInputs[2], Image, self.__callback_2, queue_size=5, tcp_nodelay=True), \
                               rospy.Subscriber(self.__topicInputs[3], Image, self.__callback_3, queue_size=5, tcp_nodelay=True)]
 
         #--- Publishers
-        self.__publishers = [rospy.Publisher(self.__topicOutputs[0], Image, queue_size=5, tcp_nodelay=True), \
+        self.__publishers = [rospy.Publisher(self.__topicOutputs[0], UInt8MultiArray, queue_size=5, tcp_nodelay=True), \
                              rospy.Publisher(self.__topicOutputs[1], Image, queue_size=5, tcp_nodelay=True), \
                              rospy.Publisher(self.__topicOutputs[2], Image, queue_size=5, tcp_nodelay=True), \
                              rospy.Publisher(self.__topicOutputs[3], Image, queue_size=5, tcp_nodelay=True)]
 
 
-    def __callback_0(self, image: Image):
-        self.__publishers[0].publish(image)
+    def __callback_0(self, data: UInt8MultiArray):
+        self.__publishers[0].publish(data)
 
 
     def __callback_1(self, image: Image):

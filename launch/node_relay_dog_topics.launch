@@ -1,15 +1,15 @@
 <launch>
     <node name="node_relay_dog_topics" pkg="draconis_demo_datafeed" type="node_relay_dog_topics.py" output="screen">
 
-        <param name="topic_input_ar0234_front_right" value="/argus/ar0234_front_right/image_raw" />
-        <param name="topic_input_ar0234_side_left" value="/argus/ar0234_side_left/image_raw" />
-        <param name="topic_input_ar0234_side_right" value="/argus/ar0234_side_right/image_raw" />
         <param name="topic_input_state_heartbeat" value="/state/heartbeat" />
-
-        <param name="topic_output_ar0234_front_right" value="/$(env ROBOT_NAMESPACE)/argus/ar0234_front_right/image_raw" />
-        <param name="topic_output_ar0234_side_left" value="/$(env ROBOT_NAMESPACE)/argus/ar0234_side_left/image_raw" />
-        <param name="topic_output_ar0234_side_right" value="/$(env ROBOT_NAMESPACE)/argus/ar0234_side_right/image_raw" />
+        <!-- <param name="topic_input_ar0234_front_right" value="/argus/ar0234_front_right/image_raw" /> -->
+        <!-- <param name="topic_input_ar0234_side_left" value="/argus/ar0234_side_left/image_raw" /> -->
+        <!-- <param name="topic_input_ar0234_side_right" value="/argus/ar0234_side_right/image_raw" /> -->
+        
         <param name="topic_output_state_heartbeat" value="/$(env ROBOT_NAMESPACE)/state/heartbeat" />
-
+        <!-- <param name="topic_output_ar0234_front_right" value="/$(env ROBOT_NAMESPACE)/argus/ar0234_front_right/image_raw" /> -->
+        <!-- <param name="topic_output_ar0234_side_left" value="/$(env ROBOT_NAMESPACE)/argus/ar0234_side_left/image_raw" /> -->
+        <!-- <param name="topic_output_ar0234_side_right" value="/$(env ROBOT_NAMESPACE)/argus/ar0234_side_right/image_raw" /> -->
+        
     </node>
 </launch>
