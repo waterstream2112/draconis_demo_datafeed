@@ -44,8 +44,8 @@ class NodeDataForMultipleCamDetection():
         self.__imagesAndCloudPackage = ImagesAndPointcloudMsg()
 
         #--- tf2 
-        # self.__tfBuffer = tf2_ros.Buffer()
-        # self.__listener = tf2_ros.TransformListener(self.__tfBuffer)
+        self.__tfBuffer = tf2_ros.Buffer()
+        self.__listener = tf2_ros.TransformListener(self.__tfBuffer)
 
         #--- Subscribers
         self.__imageFrontFilter = message_filters.Subscriber(self.__cameraFrontTopic, Image)
@@ -64,8 +64,8 @@ class NodeDataForMultipleCamDetection():
 
         self.__sync.registerCallback(self.__images_and_cloud_receiving_callback)
 
-        self.__imageSub = rospy.Subscriber(self.__cameraRearTopic, Image, self.__image_callback, queue_size=5, tcp_nodelay=True)
-        self.__cloudSub = rospy.Subscriber(self.__velodyneTopic, PointCloud2, self.__cloud_callback, queue_size=5, tcp_nodelay=True)
+        # self.__imageSub = rospy.Subscriber(self.__cameraRearTopic, Image, self.__image_callback, queue_size=5, tcp_nodelay=True)
+        # self.__cloudSub = rospy.Subscriber(self.__velodyneTopic, PointCloud2, self.__cloud_callback, queue_size=5, tcp_nodelay=True)
 
         rospy.loginfo("Initialization done!")
 
@@ -88,11 +88,11 @@ class NodeDataForMultipleCamDetection():
 
         #--- get TransformStamped
         self.__trans = TransformStamped()
-        # try:
-        #     self.__trans = self.__tfBuffer.lookup_transform(self.__imagesAndCloudPackageFrameId, cloud.header.frame_id, rospy.Time(0))
-        # except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-        #     rospy.logerr("__images_and_cloud_receiving_callback, failed to get transform")
-        #     return
+        try:
+            self.__trans = self.__tfBuffer.lookup_transform(self.__imagesAndCloudPackageFrameId, cloud.header.frame_id, rospy.Time(0))
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+            rospy.logerr("__images_and_cloud_receiving_callback, failed to get transform")
+            return
 
         #--- get data and publish
         self.__imagesAndCloudPackage.image_front = imageFront
