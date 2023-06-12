@@ -22,12 +22,14 @@ class NodeRelayDogTopics():
                               rospy.get_param("~topic_input_ar0234_front_right", ""), \
                               rospy.get_param("~topic_input_ar0234_side_left", ""), \
                               rospy.get_param("~topic_input_ar0234_side_right", ""), \
+                              rospy.get_param("~topic_input_ar0234_rear", "")
                              ]
 
         self.__topicOutputs = [rospy.get_param("~topic_output_state_heartbeat", ""), \
                               rospy.get_param("~topic_output_ar0234_front_right", ""), \
                               rospy.get_param("~topic_output_ar0234_side_left", ""), \
                               rospy.get_param("~topic_output_ar0234_side_right", ""), \
+                              rospy.get_param("~topic_output_ar0234_rear", "")
                               ]
 
         #--- Subscribers
@@ -35,6 +37,7 @@ class NodeRelayDogTopics():
                               rospy.Subscriber(self.__topicInputs[1], Image, self.__callback_1, queue_size=5, tcp_nodelay=True), \
                             #   rospy.Subscriber(self.__topicInputs[2], Image, self.__callback_2, queue_size=5, tcp_nodelay=True), \
                             #   rospy.Subscriber(self.__topicInputs[3], Image, self.__callback_3, queue_size=5, tcp_nodelay=True), \
+                            #   rospy.Subscriber(self.__topicInputs[4], Image, self.__callback_4, queue_size=5, tcp_nodelay=True)
                              ]
 
         #--- Publishers
@@ -42,6 +45,7 @@ class NodeRelayDogTopics():
                              rospy.Publisher(self.__topicOutputs[1], Image, queue_size=5, tcp_nodelay=True), \
                             #  rospy.Publisher(self.__topicOutputs[2], Image, queue_size=5, tcp_nodelay=True), \
                             #  rospy.Publisher(self.__topicOutputs[3], Image, queue_size=5, tcp_nodelay=True), \
+                            #  rospy.Publisher(self.__topicOutputs[4], Image, queue_size=5, tcp_nodelay=True)
                             ]
 
 
@@ -59,6 +63,10 @@ class NodeRelayDogTopics():
 
     def __callback_3(self, image: Image):
         self.__publishers[3].publish(image)
+
+    
+    def __callback_4(self, image: Image):
+        self.__publishers[4].publish(image)
         
 
     def onShutDown(self):
