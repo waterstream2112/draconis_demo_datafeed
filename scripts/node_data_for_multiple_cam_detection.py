@@ -60,9 +60,12 @@ class NodeDataForMultipleCamDetection():
                                                                    self.__imageRearFilter, \
                                                                    self.__cloudFilter], \
                                                                    queue_size=5, \
-                                                                   slop=0.3)
+                                                                   slop=0.5)
 
         self.__sync.registerCallback(self.__images_and_cloud_receiving_callback)
+
+        self.__imageSub = rospy.Subscriber(self.__cameraRearTopic, Image, self.__image_callback, queue_size=5, tcp_nodelay=True)
+        self.__cloudSub = rospy.Subscriber(self.__velodyneTopic, PointCloud2, self.__cloud_callback, queue_size=5, tcp_nodelay=True)
 
         rospy.loginfo("Initialization done!")
 
@@ -84,7 +87,7 @@ class NodeDataForMultipleCamDetection():
         self.__prevTime = rospy.Time.now()
 
         #--- get TransformStamped
-        # self.__trans = TransformStamped()
+        self.__trans = TransformStamped()
         # try:
         #     self.__trans = self.__tfBuffer.lookup_transform(self.__imagesAndCloudPackageFrameId, cloud.header.frame_id, rospy.Time(0))
         # except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
@@ -102,6 +105,28 @@ class NodeDataForMultipleCamDetection():
 
         rospy.loginfo("Publish imagesAndCloudPackage")
         self.__imagesAndCloudPub.publish(self.__imagesAndCloudPackage)
+
+
+    def __image_callback(self, image: Image):
+
+        # rospy.loginfo("<< node::__image_callback >>")
+
+        # rospy.loginfo(f"__image_callback {(rospy.Time.now() - image.header.stamp).to_sec() : 0.2f}")
+
+        pass
+
+        # image.header.stamp = rospy.Time.now()
+        # self.__modifiedImagePub.publish(image)
+
+
+    def __cloud_callback(self, cloud: PointCloud2):
+
+        # rospy.loginfo("<< node::__cloud_callback >>")
+
+        # rospy.loginfo(f"__cloud_callback {(rospy.Time.now() - cloud.header.stamp).to_sec() : 0.2f}")
+        # rospy.loginfo(f"__cloud_callback {cloud.header.frame_id} ")
+        pass
+
 
 
     def onShutDown(self):

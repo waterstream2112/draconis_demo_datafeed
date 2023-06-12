@@ -35,17 +35,17 @@ class NodeRelayDogTopics():
         #--- Subscribers
         self.__subscribers = [rospy.Subscriber(self.__topicInputs[0], UInt8MultiArray, self.__callback_0, queue_size=5, tcp_nodelay=True), \
                               rospy.Subscriber(self.__topicInputs[1], Image, self.__callback_1, queue_size=5, tcp_nodelay=True), \
-                            #   rospy.Subscriber(self.__topicInputs[2], Image, self.__callback_2, queue_size=5, tcp_nodelay=True), \
-                            #   rospy.Subscriber(self.__topicInputs[3], Image, self.__callback_3, queue_size=5, tcp_nodelay=True), \
-                            #   rospy.Subscriber(self.__topicInputs[4], Image, self.__callback_4, queue_size=5, tcp_nodelay=True)
+                              rospy.Subscriber(self.__topicInputs[2], Image, self.__callback_2, queue_size=5, tcp_nodelay=True), \
+                              rospy.Subscriber(self.__topicInputs[3], Image, self.__callback_3, queue_size=5, tcp_nodelay=True), \
+                              rospy.Subscriber(self.__topicInputs[4], Image, self.__callback_4, queue_size=5, tcp_nodelay=True)
                              ]
 
         #--- Publishers
         self.__publishers = [rospy.Publisher(self.__topicOutputs[0], UInt8MultiArray, queue_size=5, tcp_nodelay=True), \
                              rospy.Publisher(self.__topicOutputs[1], Image, queue_size=5, tcp_nodelay=True), \
-                            #  rospy.Publisher(self.__topicOutputs[2], Image, queue_size=5, tcp_nodelay=True), \
-                            #  rospy.Publisher(self.__topicOutputs[3], Image, queue_size=5, tcp_nodelay=True), \
-                            #  rospy.Publisher(self.__topicOutputs[4], Image, queue_size=5, tcp_nodelay=True)
+                             rospy.Publisher(self.__topicOutputs[2], Image, queue_size=5, tcp_nodelay=True), \
+                             rospy.Publisher(self.__topicOutputs[3], Image, queue_size=5, tcp_nodelay=True), \
+                             rospy.Publisher(self.__topicOutputs[4], Image, queue_size=5, tcp_nodelay=True)
                             ]
 
 
