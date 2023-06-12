@@ -44,8 +44,8 @@ class NodeDataForMultipleCamDetection():
         self.__imagesAndCloudPackage = ImagesAndPointcloudMsg()
 
         #--- tf2 
-        self.__tfBuffer = tf2_ros.Buffer()
-        self.__listener = tf2_ros.TransformListener(self.__tfBuffer)
+        # self.__tfBuffer = tf2_ros.Buffer()
+        # self.__listener = tf2_ros.TransformListener(self.__tfBuffer)
 
         #--- Subscribers
         self.__imageFrontFilter = message_filters.Subscriber(self.__cameraFrontTopic, Image)
@@ -63,6 +63,8 @@ class NodeDataForMultipleCamDetection():
                                                                    slop=0.3)
 
         self.__sync.registerCallback(self.__images_and_cloud_receiving_callback)
+
+        rospy.loginfo("Initialization done!")
 
     
         #--- Publishers
@@ -82,12 +84,12 @@ class NodeDataForMultipleCamDetection():
         self.__prevTime = rospy.Time.now()
 
         #--- get TransformStamped
-        self.__trans = TransformStamped()
-        try:
-            self.__trans = self.__tfBuffer.lookup_transform(self.__imagesAndCloudPackageFrameId, cloud.header.frame_id, rospy.Time(0))
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-            rospy.logerr("__images_and_cloud_receiving_callback, failed to get transform")
-            return
+        # self.__trans = TransformStamped()
+        # try:
+        #     self.__trans = self.__tfBuffer.lookup_transform(self.__imagesAndCloudPackageFrameId, cloud.header.frame_id, rospy.Time(0))
+        # except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+        #     rospy.logerr("__images_and_cloud_receiving_callback, failed to get transform")
+        #     return
 
         #--- get data and publish
         self.__imagesAndCloudPackage.image_front = imageFront
