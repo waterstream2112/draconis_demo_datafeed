@@ -1,5 +1,5 @@
 <launch>
-    <node name="node_data_for_vision_perception" pkg="draconis_demo_datafeed" type="node_data_for_vision_perception.py" output="screen">
+    <node name="node_data_for_multiple_cam_detection" pkg="draconis_demo_datafeed" type="node_data_for_multiple_cam_detection.py" output="screen">
 
         <!-- <param name="topic_input_camera_front" value="/$(env ROBOT_NAMESPACE)/argus/ar0234_front_right/image_raw" />
         <param name="topic_input_camera_left" value="/$(env ROBOT_NAMESPACE)/argus/ar0234_side_left/image_raw" />
