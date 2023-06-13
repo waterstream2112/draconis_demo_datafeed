@@ -15,7 +15,7 @@
 
         <param name="topic_output_images_and_cloud" value="/$(env ROBOT_NAMESPACE)/images_and_cloud" />
         
-        <param name="output_framerate" value="4" type="double"/>
-        <param name="images_and_cloud_package_frame_id" value="$(env ROBOT_NAMESPACE)/map" type="str" />
+        <param name="output_framerate" value="8" type="double"/>
+        <param name="images_and_cloud_package_frame_id" value="$(env ROBOT_NAMESPACE)/base_link" type="str" />
     </node>
 </launch>

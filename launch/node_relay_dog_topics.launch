@@ -6,12 +6,16 @@
         <param name="topic_input_ar0234_side_left" value="/argus/ar0234_side_left/image_raw" />
         <param name="topic_input_ar0234_side_right" value="/argus/ar0234_side_right/image_raw" />
         <param name="topic_input_ar0234_rear" value="/argus/ar0234_rear/image_raw" />
+        <param name="topic_input_object_detection" value="/$(env ROBOT_NAMESPACE)/object_detection" />
+        <param name="topic_input_obstacle_edge_cloud" value="/$(env ROBOT_NAMESPACE)/obstacle_edge_cloud" />
         
         <param name="topic_output_state_heartbeat" value="/$(env ROBOT_NAMESPACE)/state/heartbeat" />
         <param name="topic_output_ar0234_front_right" value="/$(env ROBOT_NAMESPACE)/argus/ar0234_front_right/image_raw" />
         <param name="topic_output_ar0234_side_left" value="/$(env ROBOT_NAMESPACE)/argus/ar0234_side_left/image_raw" />
         <param name="topic_output_ar0234_side_right" value="/$(env ROBOT_NAMESPACE)/argus/ar0234_side_right/image_raw" />
         <param name="topic_output_ar0234_rear" value="/$(env ROBOT_NAMESPACE)/argus/ar0234_rear/image_raw" />
+        <param name="topic_output_object_detection" value="/object_detection" />
+        <param name="topic_output_obstacle_edge_cloud" value="/server/obstacle_edge_cloud" />
         
     </node>
 </launch>
